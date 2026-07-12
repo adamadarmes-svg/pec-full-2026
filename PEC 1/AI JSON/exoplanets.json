@@ -1,0 +1,119 @@
+{
+  "coleccion": "exoplanets",
+  "descripcion": "Exoplanetas registrados en el catálogo, con sus parámetros físicos y su fuente científica.",
+  "campos": {
+    "_id": {
+      "tipo": "ObjectId",
+      "obligatorio": true,
+      "descripcion": "Identificador único. Lo genera MongoDB automáticamente."
+    },
+    "nombre": {
+      "tipo": "String",
+      "obligatorio": true,
+      "unico": true,
+      "descripcion": "Designación del exoplaneta (por ejemplo, 'Kepler-452 b'). No se puede repetir."
+    },
+    "estrellaAnfitriona": {
+      "tipo": "String",
+      "obligatorio": true,
+      "descripcion": "Nombre de la estrella alrededor de la cual orbita el planeta."
+    },
+    "tipoEspectral": {
+      "tipo": "String",
+      "obligatorio": false,
+      "descripcion": "Tipo espectral de la estrella anfitriona (por ejemplo, 'G2', 'M5')."
+    },
+    "tipoPlaneta": {
+      "tipo": "String",
+      "obligatorio": false,
+      "valores": ["Terrestre", "Supertierra", "Tipo-Neptuno", "Gigante gaseoso", "Desconocido"],
+      "porDefecto": "Desconocido",
+      "descripcion": "Categoría del planeta según su tamaño y composición."
+    },
+    "masa": {
+      "tipo": "Number",
+      "obligatorio": false,
+      "descripcion": "Masa del planeta en masas terrestres (M⊕)."
+    },
+    "radio": {
+      "tipo": "Number",
+      "obligatorio": false,
+      "descripcion": "Radio del planeta en radios terrestres (R⊕)."
+    },
+    "periodoOrbital": {
+      "tipo": "Number",
+      "obligatorio": false,
+      "descripcion": "Tiempo que tarda en completar una órbita, en días."
+    },
+    "temperaturaEquilibrio": {
+      "tipo": "Number",
+      "obligatorio": false,
+      "descripcion": "Temperatura de equilibrio estimada, en kelvin (K)."
+    },
+    "distancia": {
+      "tipo": "Number",
+      "obligatorio": false,
+      "descripcion": "Distancia a la Tierra, en años luz."
+    },
+    "metodoDescubrimiento": {
+      "tipo": "String",
+      "obligatorio": false,
+      "valores": ["Tránsito", "Velocidad radial", "Imagen directa", "Microlente", "Astrometría", "Otro"],
+      "descripcion": "Técnica con la que se descubrió el exoplaneta."
+    },
+    "anioDescubrimiento": {
+      "tipo": "Number",
+      "obligatorio": false,
+      "descripcion": "Año en que se confirmó el descubrimiento."
+    },
+    "zonaHabitable": {
+      "tipo": "Boolean",
+      "obligatorio": false,
+      "porDefecto": false,
+      "descripcion": "Indica si el planeta se encuentra en la zona habitable de su estrella."
+    },
+    "descripcion": {
+      "tipo": "String",
+      "obligatorio": false,
+      "descripcion": "Notas o resumen del exoplaneta."
+    },
+    "imagen": {
+      "tipo": "String",
+      "obligatorio": false,
+      "descripcion": "URL de una imagen o representación del planeta."
+    },
+    "fuentePrincipal": {
+      "tipo": "ObjectId",
+      "ref": "sources",
+      "obligatorio": false,
+      "descripcion": "Fuente científica que respalda los datos del planeta (relación con sources)."
+    },
+    "creadoPor": {
+      "tipo": "ObjectId",
+      "ref": "users",
+      "obligatorio": false,
+      "descripcion": "Usuario que registró el exoplaneta (relación con users)."
+    },
+    "createdAt": {
+      "tipo": "Date",
+      "obligatorio": false,
+      "descripcion": "Fecha de creación del registro."
+    }
+  },
+  "relaciones": [
+    {
+      "campo": "creadoPor",
+      "tipo": "referencia",
+      "coleccion": "users",
+      "cardinalidad": "N:1",
+      "descripcion": "Muchos exoplanetas pueden haber sido registrados por un mismo usuario."
+    },
+    {
+      "campo": "fuentePrincipal",
+      "tipo": "referencia",
+      "coleccion": "sources",
+      "cardinalidad": "N:1",
+      "descripcion": "Muchos exoplanetas pueden apoyarse en una misma fuente científica."
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+[
+  {
+    "_id": { "$oid": "6871a0000000000000000001" },
+    "nombre": "Andrés Felipe Adarmes",
+    "email": "andres.adarmes@exoarchive.org",
+    "password": "$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy",
+    "institucion": "Centro de Estudios de Innovación",
+    "rol": "admin",
+    "activo": true,
+    "createdAt": { "$date": "2026-02-10T09:00:00.000Z" }
+  },
+  {
+    "_id": { "$oid": "6871a0000000000000000002" },
+    "nombre": "Ingrid Solveig",
+    "email": "ingrid.solveig@nordicobs.org",
+    "password": "$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy",
+    "institucion": "Nordic Optical Telescope",
+    "rol": "investigador",
+    "activo": true,
+    "createdAt": { "$date": "2026-02-14T11:30:00.000Z" }
+  },
+  {
+    "_id": { "$oid": "6871a0000000000000000003" },
+    "nombre": "Lucía Ramírez",
+    "email": "lucia.ramirez@iac.es",
+    "password": "$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy",
+    "institucion": "Instituto de Astrofísica de Canarias",
+    "rol": "investigador",
+    "activo": true,
+    "createdAt": { "$date": "2026-03-02T08:15:00.000Z" }
+  },
+  {
+    "_id": { "$oid": "6871a0000000000000000004" },
+    "nombre": "Jake Sullivan",
+    "email": "jake.sullivan@caltech.edu",
+    "password": "$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy",
+    "institucion": "California Institute of Technology",
+    "rol": "investigador",
+    "activo": false,
+    "createdAt": { "$date": "2026-03-18T16:45:00.000Z" }
+  }
+]

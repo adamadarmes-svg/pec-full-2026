@@ -1,0 +1,45 @@
+{
+  "coleccion": "users",
+  "descripcion": "Usuarios registrados (investigadores o analistas) que pueden gestionar el catálogo de exoplanetas.",
+  "campos": {
+    "_id": {
+      "tipo": "ObjectId",
+      "obligatorio": true,
+      "descripcion": "Identificador único. Lo genera MongoDB automáticamente."
+    },
+    "nombre": {
+      "tipo": "String",
+      "obligatorio": true,
+      "descripcion": "Nombre del usuario."
+    },
+    "email": {
+      "tipo": "String",
+      "obligatorio": true,
+      "unico": true,
+      "descripcion": "Correo electrónico. No se puede repetir."
+    },
+    "password": {
+      "tipo": "String",
+      "obligatorio": true,
+      "descripcion": "Contraseña almacenada cifrada (hash)."
+    },
+    "institucion": {
+      "tipo": "String",
+      "obligatorio": false,
+      "descripcion": "Centro, universidad u observatorio al que pertenece el usuario."
+    },
+    "rol": {
+      "tipo": "String",
+      "obligatorio": false,
+      "valores": ["admin", "investigador"],
+      "porDefecto": "investigador",
+      "descripcion": "Nivel de permisos del usuario."
+    },
+    "createdAt": {
+      "tipo": "Date",
+      "obligatorio": false,
+      "descripcion": "Fecha de creación del registro."
+    }
+  },
+  "relaciones": []
+}

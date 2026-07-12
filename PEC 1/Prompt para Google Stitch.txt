@@ -1,0 +1,34 @@
+Diseña una aplicación web responsive de tipo gestor/catálogo para gestionar
+exoplanetas. Tema: catálogo científico de exoplanetas y sus fuentes de
+investigación. Estilo oscuro, técnico y minimalista con glassmorphism (paneles
+translúcidos con desenfoque); paleta de fondo casi negro azulado, texto gris
+claro y un único acento azul-cian usado con moderación; tipografía sans-serif
+legible (tipo Inter) con jerarquía visual clara y datos numéricos bien
+diferenciados.
+
+Genera estas pantallas, todas con el MISMO header (logo "EXO-ARCHIVE" a la
+izquierda + menú de navegación + avatar de usuario) y el MISMO footer:
+
+1. Inicio / Listado: una sección hero con título y botón de llamada a la acción;
+   debajo, un listado de exoplanetas en tarjetas (cards). Cada tarjeta muestra:
+   nombre del planeta, estrella anfitriona, tipo de planeta, distancia en años
+   luz y un botón "Ver detalle". Incluye una barra de búsqueda y filtros por
+   tipo de planeta y método de descubrimiento.
+2. Detalle: la ficha de un exoplaneta con imagen grande del planeta, su nombre,
+   estrella anfitriona, y una tabla de parámetros (masa, radio, periodo orbital,
+   temperatura de equilibrio, distancia, método y año de descubrimiento, si está
+   en zona habitable). Muestra también la fuente científica (título, autores,
+   año, enlace) y los botones "Editar" y "Eliminar".
+3. Añadir: un formulario para crear un exoplaneta con los campos nombre,
+   estrella anfitriona, tipo de planeta (desplegable), masa, radio, periodo
+   orbital, temperatura, distancia, método de descubrimiento (desplegable), año,
+   zona habitable (interruptor), descripción y fuente científica; con un botón
+   "Guardar".
+4. Editar: el mismo formulario que "Añadir", con los datos precargados y un
+   botón "Actualizar".
+5. Eliminar: un diálogo de confirmación ("¿Seguro que quieres eliminar este
+   exoplaneta?") con los botones "Cancelar" y "Eliminar".
+
+Usa componentes reutilizables (botones, tarjetas, inputs), espaciado generoso,
+jerarquía visual clara, estados hover en los botones y un diseño responsive
+(móvil y escritorio).

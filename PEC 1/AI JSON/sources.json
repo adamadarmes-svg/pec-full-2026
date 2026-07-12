@@ -1,0 +1,48 @@
+{
+  "coleccion": "sources",
+  "descripcion": "Fuentes científicas y bibliografía que respaldan los datos de los exoplanetas.",
+  "campos": {
+    "_id": {
+      "tipo": "ObjectId",
+      "obligatorio": true,
+      "descripcion": "Identificador único. Lo genera MongoDB automáticamente."
+    },
+    "titulo": {
+      "tipo": "String",
+      "obligatorio": true,
+      "descripcion": "Título del artículo, estudio o publicación."
+    },
+    "autores": {
+      "tipo": "String",
+      "obligatorio": true,
+      "descripcion": "Autor o autores de la publicación."
+    },
+    "publicacion": {
+      "tipo": "String",
+      "obligatorio": false,
+      "descripcion": "Revista, congreso o medio donde se publicó (por ejemplo, 'The Astrophysical Journal')."
+    },
+    "anio": {
+      "tipo": "Number",
+      "obligatorio": false,
+      "descripcion": "Año de publicación."
+    },
+    "doi": {
+      "tipo": "String",
+      "obligatorio": false,
+      "unico": true,
+      "descripcion": "Identificador digital del documento (DOI). No se puede repetir."
+    },
+    "url": {
+      "tipo": "String",
+      "obligatorio": false,
+      "descripcion": "Enlace a la fuente original."
+    },
+    "createdAt": {
+      "tipo": "Date",
+      "obligatorio": false,
+      "descripcion": "Fecha de creación del registro."
+    }
+  },
+  "relaciones": []
+}
