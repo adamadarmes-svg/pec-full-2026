@@ -1,0 +1,619 @@
+{
+  "info": {
+    "name": "EXO-ARCHIVE API (PEC 3)",
+    "description": "Colección para probar el CRUD de exoplanetas. Importable en Postman o Thunder Client. Cambia la variable {{base}} por tu URL local o la de Vercel, y {{id}} por un _id real obtenido de un GET.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base",
+      "value": "http://localhost:4000"
+    },
+    {
+      "key": "id",
+      "value": "REEMPLAZA_POR_UN_ID"
+    },
+    {
+      "key": "usuarioId",
+      "value": "REEMPLAZA_POR_UN_ID"
+    },
+    {
+      "key": "fuenteId",
+      "value": "REEMPLAZA_POR_UN_ID"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. General",
+      "item": [
+        {
+          "name": "Estado de la API",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/",
+              "host": [
+                "{{base}}"
+              ],
+              "path": []
+            },
+            "description": "Devuelve el listado de endpoints."
+          },
+          "response": []
+        },
+        {
+          "name": "Health check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/api/health",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "api",
+                "health"
+              ]
+            },
+            "description": "Estado del servidor y de la conexión a Atlas."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "1. Exoplanetas (CRUD)",
+      "item": [
+        {
+          "name": "Listar exoplanetas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/api/exoplanets",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "api",
+                "exoplanets"
+              ]
+            },
+            "description": "Lista paginada."
+          },
+          "response": []
+        },
+        {
+          "name": "Filtrar por tipo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/api/exoplanets?tipoPlaneta=Terrestre",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "api",
+                "exoplanets"
+              ],
+              "query": [
+                {
+                  "key": "tipoPlaneta",
+                  "value": "Terrestre"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Solo zona habitable",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/api/exoplanets?zonaHabitable=true",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "api",
+                "exoplanets"
+              ],
+              "query": [
+                {
+                  "key": "zonaHabitable",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar por nombre",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/api/exoplanets?buscar=kepler",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "api",
+                "exoplanets"
+              ],
+              "query": [
+                {
+                  "key": "buscar",
+                  "value": "kepler"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Paginacion",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/api/exoplanets?pagina=1&limite=3",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "api",
+                "exoplanets"
+              ],
+              "query": [
+                {
+                  "key": "pagina",
+                  "value": "1"
+                },
+                {
+                  "key": "limite",
+                  "value": "3"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener un exoplaneta",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/api/exoplanets/{{id}}",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "api",
+                "exoplanets",
+                "{{id}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Crear exoplaneta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/api/exoplanets",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "api",
+                "exoplanets"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"LHS 1140 b\",\n  \"estrellaAnfitriona\": \"LHS 1140\",\n  \"tipoEspectral\": \"M4.5V\",\n  \"tipoPlaneta\": \"Supertierra\",\n  \"masa\": 6.38,\n  \"radio\": 1.73,\n  \"periodoOrbital\": 24.74,\n  \"temperaturaEquilibrio\": 230,\n  \"distancia\": 48.9,\n  \"metodoDescubrimiento\": \"Tránsito\",\n  \"anioDescubrimiento\": 2017,\n  \"zonaHabitable\": true,\n  \"confirmado\": true,\n  \"descripcion\": \"Supertierra rocosa en la zona habitable de una enana roja tranquila.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar exoplaneta",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/api/exoplanets/{{id}}",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "api",
+                "exoplanets",
+                "{{id}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descripcion\": \"Descripción actualizada tras una nueva revisión de los datos.\",\n  \"confirmado\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar exoplaneta",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/api/exoplanets/{{id}}",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "api",
+                "exoplanets",
+                "{{id}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Usuarios",
+      "item": [
+        {
+          "name": "Listar usuarios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/api/users",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            },
+            "description": "La contraseña nunca se devuelve."
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener un usuario",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/api/users/{{usuarioId}}",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{usuarioId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Crear usuario",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/api/users",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Erik Lindqvist\",\n  \"email\": \"erik.lindqvist@nordicobs.org\",\n  \"password\": \"secreto1234\",\n  \"institucion\": \"Nordic Optical Telescope\",\n  \"rol\": \"investigador\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Fuentes",
+      "item": [
+        {
+          "name": "Listar fuentes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/api/sources",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "api",
+                "sources"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener una fuente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/api/sources/{{fuenteId}}",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "api",
+                "sources",
+                "{{fuenteId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Crear fuente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/api/sources",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "api",
+                "sources"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"A temperate rocky super-Earth transiting a nearby cool star\",\n  \"autores\": \"Dittmann, J. A. et al.\",\n  \"publicacion\": \"Nature\",\n  \"anio\": 2017,\n  \"doi\": \"10.1038/nature22055\",\n  \"url\": \"https://doi.org/10.1038/nature22055\",\n  \"revisadoPorPares\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Gestion de errores",
+      "item": [
+        {
+          "name": "404 - ruta inexistente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/api/ruta-que-no-existe",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "api",
+                "ruta-que-no-existe"
+              ]
+            },
+            "description": "Middleware notFound."
+          },
+          "response": []
+        },
+        {
+          "name": "400 - id invalido",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/api/exoplanets/id-invalido",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "api",
+                "exoplanets",
+                "id-invalido"
+              ]
+            },
+            "description": "CastError."
+          },
+          "response": []
+        },
+        {
+          "name": "404 - id inexistente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base}}/api/exoplanets/000000000000000000000000",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "api",
+                "exoplanets",
+                "000000000000000000000000"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "400 - faltan obligatorios",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/api/exoplanets",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "api",
+                "exoplanets"
+              ]
+            },
+            "description": "ValidationError.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descripcion\": \"Faltan nombre y estrella anfitriona\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "400 - fuera del enum",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/api/exoplanets",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "api",
+                "exoplanets"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Planeta de prueba\",\n  \"estrellaAnfitriona\": \"Estrella de prueba\",\n  \"tipoPlaneta\": \"Planeta de chocolate\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "409 - nombre duplicado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/api/exoplanets",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "api",
+                "exoplanets"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Kepler-452 b\",\n  \"estrellaAnfitriona\": \"Kepler-452\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

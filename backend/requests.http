@@ -1,0 +1,180 @@
+### ============================================================
+### EXO-ARCHIVE API — Pruebas de endpoints
+### Requiere la extensión REST Client (humao.rest-client)
+### Pulsa "Send Request" sobre cada bloque para ejecutarlo.
+### ============================================================
+
+@base = http://localhost:4000
+### Cambia {{base}} por tu URL de Vercel cuando pruebes el despliegue:
+### @base = https://TU-PROYECTO.vercel.app
+
+# Pega aquí un _id real obtenido del primer GET
+@id = 6871c0000000000000000001
+@usuarioId = 6871a0000000000000000001
+@fuenteId = 6871b0000000000000000001
+
+
+### ------------------------------------------------------------
+### 0. Comprobaciones generales
+### ------------------------------------------------------------
+
+### Raíz: documentación de la API
+GET {{base}}/
+
+### Estado del servidor y de la base de datos
+GET {{base}}/api/health
+
+
+### ------------------------------------------------------------
+### 1. EXOPLANETAS — CRUD completo
+### ------------------------------------------------------------
+
+### 1.1 Listar todos
+GET {{base}}/api/exoplanets
+
+### 1.2 Listar con filtro por tipo de planeta
+GET {{base}}/api/exoplanets?tipoPlaneta=Terrestre
+
+### 1.3 Listar solo los de la zona habitable
+GET {{base}}/api/exoplanets?zonaHabitable=true
+
+### 1.4 Buscar por nombre (parcial, sin distinguir mayúsculas)
+GET {{base}}/api/exoplanets?buscar=kepler
+
+### 1.5 Paginación
+GET {{base}}/api/exoplanets?pagina=1&limite=3
+
+### 1.6 Obtener uno por id
+GET {{base}}/api/exoplanets/{{id}}
+
+### 1.7 Crear uno nuevo
+POST {{base}}/api/exoplanets
+Content-Type: application/json
+
+{
+  "nombre": "LHS 1140 b",
+  "estrellaAnfitriona": "LHS 1140",
+  "tipoEspectral": "M4.5V",
+  "tipoPlaneta": "Supertierra",
+  "masa": 6.38,
+  "radio": 1.73,
+  "periodoOrbital": 24.74,
+  "temperaturaEquilibrio": 230,
+  "distancia": 48.9,
+  "metodoDescubrimiento": "Tránsito",
+  "anioDescubrimiento": 2017,
+  "zonaHabitable": true,
+  "confirmado": true,
+  "descripcion": "Supertierra rocosa en la zona habitable de una enana roja tranquila."
+}
+
+### 1.8 Actualizar uno existente
+PUT {{base}}/api/exoplanets/{{id}}
+Content-Type: application/json
+
+{
+  "descripcion": "Descripción actualizada tras una nueva revisión de los datos.",
+  "confirmado": true
+}
+
+### 1.9 Eliminar uno
+DELETE {{base}}/api/exoplanets/{{id}}
+
+
+### ------------------------------------------------------------
+### 2. USUARIOS
+### ------------------------------------------------------------
+
+### 2.1 Listar (la contraseña nunca se devuelve)
+GET {{base}}/api/users
+
+### 2.2 Obtener uno por id
+GET {{base}}/api/users/{{usuarioId}}
+
+### 2.3 Crear (la contraseña se guarda encriptada)
+POST {{base}}/api/users
+Content-Type: application/json
+
+{
+  "nombre": "Erik Lindqvist",
+  "email": "erik.lindqvist@nordicobs.org",
+  "password": "secreto1234",
+  "institucion": "Nordic Optical Telescope",
+  "rol": "investigador"
+}
+
+
+### ------------------------------------------------------------
+### 3. FUENTES BIBLIOGRÁFICAS
+### ------------------------------------------------------------
+
+### 3.1 Listar
+GET {{base}}/api/sources
+
+### 3.2 Obtener una por id
+GET {{base}}/api/sources/{{fuenteId}}
+
+### 3.3 Crear
+POST {{base}}/api/sources
+Content-Type: application/json
+
+{
+  "titulo": "A temperate rocky super-Earth transiting a nearby cool star",
+  "autores": "Dittmann, J. A. et al.",
+  "publicacion": "Nature",
+  "anio": 2017,
+  "doi": "10.1038/nature22055",
+  "url": "https://doi.org/10.1038/nature22055",
+  "revisadoPorPares": true
+}
+
+
+### ------------------------------------------------------------
+### 4. GESTIÓN DE ERRORES
+### ------------------------------------------------------------
+
+### 4.1 Ruta inexistente -> 404 del middleware notFound
+GET {{base}}/api/ruta-que-no-existe
+
+### 4.2 Id con formato inválido -> 400 (CastError)
+GET {{base}}/api/exoplanets/id-invalido
+
+### 4.3 Id con formato correcto pero inexistente -> 404
+GET {{base}}/api/exoplanets/000000000000000000000000
+
+### 4.4 Crear sin campos obligatorios -> 400 (ValidationError)
+POST {{base}}/api/exoplanets
+Content-Type: application/json
+
+{
+  "descripcion": "Faltan nombre y estrella anfitriona"
+}
+
+### 4.5 Valor fuera del enum -> 400
+POST {{base}}/api/exoplanets
+Content-Type: application/json
+
+{
+  "nombre": "Planeta de prueba",
+  "estrellaAnfitriona": "Estrella de prueba",
+  "tipoPlaneta": "Planeta de chocolate"
+}
+
+### 4.6 Nombre duplicado -> 409 (clave única)
+POST {{base}}/api/exoplanets
+Content-Type: application/json
+
+{
+  "nombre": "Kepler-452 b",
+  "estrellaAnfitriona": "Kepler-452"
+}
+
+### 4.7 Email duplicado en usuarios -> 409
+POST {{base}}/api/users
+Content-Type: application/json
+
+{
+  "nombre": "Duplicado",
+  "email": "andres.adarmes@exoarchive.org",
+  "password": "1234"
+}
