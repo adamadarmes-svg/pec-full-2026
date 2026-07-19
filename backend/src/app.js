@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 
+const connectDB = require("./config/db");
+
 const exoplanetRoutes = require("./routes/exoplanet.routes");
 const userRoutes = require("./routes/user.routes");
 const sourceRoutes = require("./routes/source.routes");
@@ -11,8 +13,20 @@ const errorHandler = require("./middlewares/errorHandler");
 
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+
+app.use(cors());            
+app.use(express.json());    
+
+
+app.use(async (req, res, next) => {
+  try {
+    await connectDB(process.env.MONGODB_URI);
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
+
 
 app.get("/", (req, res) => {
   res.json({
@@ -27,6 +41,7 @@ app.get("/", (req, res) => {
   });
 });
 
+
 app.get("/api/health", (req, res) => {
   const estados = ["desconectado", "conectado", "conectando", "desconectando"];
   res.json({
@@ -37,11 +52,12 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+
 app.use("/api/exoplanets", exoplanetRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/sources", sourceRoutes);
 
-app.use(notFound);
+app.use(notFound);    
 app.use(errorHandler);
 
 module.exports = app;
