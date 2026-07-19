@@ -7,8 +7,8 @@ conectada a **MongoDB Atlas** y desplegada en **Vercel**.
 Continuación de la PEC 1 (diseño y modelo de datos) y la PEC 2 (base de
 datos desplegada en Atlas).
 
-- **API en producción:** `https://TU-PROYECTO.vercel.app`
-- **Repositorio:** `https://github.com/TU-USUARIO/TU-REPO`
+- **API en producción:** `https://vercel.com/adamadarmes-svgs-projects/pec-full-2026/HuBWF2mGHUTuCbvv9dFKakNH6K3z`
+- **Repositorio:** `https://github.com/adamadarmes-svg/pec-full-2026`
 
 ---
 
@@ -62,34 +62,6 @@ flowchart TD
 
 ### Estructura de carpetas
 
-```
-backend/
-├── src/
-│   ├── config/
-│   │   └── db.js                    # conexión a Atlas (con caché)
-│   ├── models/
-│   │   ├── User.js
-│   │   ├── Exoplanet.js
-│   │   └── Source.js
-│   ├── controllers/
-│   │   ├── exoplanet.controller.js
-│   │   ├── user.controller.js
-│   │   └── source.controller.js
-│   ├── routes/
-│   │   ├── exoplanet.routes.js
-│   │   ├── user.routes.js
-│   │   └── source.routes.js
-│   ├── middlewares/
-│   │   ├── notFound.js              # 404
-│   │   └── errorHandler.js          # 500 y demás
-│   └── app.js                       # configura Express
-├── server.js                        # arranque local y export para Vercel
-├── vercel.json
-├── .env                             # NO se sube a GitHub
-├── .env.example
-├── .gitignore
-├── requests.http
-└── exoarchive.postman_collection.json
 ```
 
 Cada capa tiene una única responsabilidad: las **rutas** solo enlazan un
