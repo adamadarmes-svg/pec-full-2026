@@ -1,33 +1,15 @@
-### ============================================================
-### EXO-ARCHIVE API — Pruebas de endpoints
-### Requiere la extensión REST Client (humao.rest-client)
-### Pulsa "Send Request" sobre cada bloque para ejecutarlo.
-### ============================================================
+@base = https://pec-full-2026.vercel.app
 
-@base = http://localhost:4000
-### Cambia {{base}} por tu URL de Vercel cuando pruebes el despliegue:
-### @base = https://TU-PROYECTO.vercel.app
-
-# Pega aquí un _id real obtenido del primer GET
 @id = 6871c0000000000000000001
 @usuarioId = 6871a0000000000000000001
 @fuenteId = 6871b0000000000000000001
 
 
-### ------------------------------------------------------------
-### 0. Comprobaciones generales
-### ------------------------------------------------------------
-
-### Raíz: documentación de la API
 GET {{base}}/
 
 ### Estado del servidor y de la base de datos
 GET {{base}}/api/health
 
-
-### ------------------------------------------------------------
-### 1. EXOPLANETAS — CRUD completo
-### ------------------------------------------------------------
 
 ### 1.1 Listar todos
 GET {{base}}/api/exoplanets
@@ -81,9 +63,6 @@ Content-Type: application/json
 DELETE {{base}}/api/exoplanets/{{id}}
 
 
-### ------------------------------------------------------------
-### 2. USUARIOS
-### ------------------------------------------------------------
 
 ### 2.1 Listar (la contraseña nunca se devuelve)
 GET {{base}}/api/users
@@ -104,9 +83,6 @@ Content-Type: application/json
 }
 
 
-### ------------------------------------------------------------
-### 3. FUENTES BIBLIOGRÁFICAS
-### ------------------------------------------------------------
 
 ### 3.1 Listar
 GET {{base}}/api/sources
@@ -129,9 +105,6 @@ Content-Type: application/json
 }
 
 
-### ------------------------------------------------------------
-### 4. GESTIÓN DE ERRORES
-### ------------------------------------------------------------
 
 ### 4.1 Ruta inexistente -> 404 del middleware notFound
 GET {{base}}/api/ruta-que-no-existe
