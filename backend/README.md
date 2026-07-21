@@ -7,7 +7,7 @@ conectada a **MongoDB Atlas** y desplegada en **Vercel**.
 Continuación de la PEC 1 (diseño y modelo de datos) y la PEC 2 (base de
 datos desplegada en Atlas).
 
-- **API en producción:** `https://vercel.com/adamadarmes-svgs-projects/pec-full-2026/HuBWF2mGHUTuCbvv9dFKakNH6K3z`
+- **API en producción:** `https://pec-full-2026.vercel.app/`
 - **Repositorio:** `https://github.com/adamadarmes-svg/pec-full-2026`
 
 ---
@@ -254,18 +254,14 @@ Los errores siguen siempre la misma forma, la que definen los middlewares:
 Requisitos: Node.js 18 o superior y un clúster de MongoDB Atlas.
 
 ```bash
-# 1. Clonar e instalar
 git clone https://github.com/TU-USUARIO/TU-REPO.git
 cd TU-REPO
 npm install
 
-# 2. Configurar las variables de entorno
 cp .env.example .env
-#    y editar .env con la cadena de conexión real
 
-# 3. Arrancar
-npm run dev     # con recarga automática (nodemon)
-npm start       # sin recarga
+npm run dev     
+npm start       
 ```
 
 El servidor queda en `http://localhost:4000`.
