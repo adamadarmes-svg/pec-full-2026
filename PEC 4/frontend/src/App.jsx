@@ -1,4 +1,4 @@
-import ExoplanetsPage from "./pages/ExoplanetsPage";
+import ExoplanetsPage from "@/pages/ExoplanetsPage";
 
 function App() {
   return <ExoplanetsPage />;

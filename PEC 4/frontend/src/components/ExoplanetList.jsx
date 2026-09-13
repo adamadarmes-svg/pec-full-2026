@@ -1,6 +1,6 @@
-import ExoplanetCard from "./ExoplanetCard";
-import ExoplanetForm from "./ExoplanetForm";
-import { panelBase } from "../ui";
+import ExoplanetCard from "@/components/ExoplanetCard";
+import ExoplanetForm from "@/components/ExoplanetForm";
+import { panelBase } from "@/ui";
 
 function ExoplanetList({ exoplanetas, editandoId, onEdit, onCancelEdit, onUpdate, onDelete, enviando }) {
   if (exoplanetas.length === 0) {

@@ -1,6 +1,6 @@
 import { useState } from "react";
-import FieldSelect from "./FieldSelect";
-import { btnGhost, btnPrimario, campoInput } from "../ui";
+import FieldSelect from "@/components/FieldSelect";
+import { btnGhost, btnPrimario, campoInput } from "@/ui";
 
 const TIPOS_PLANETA = ["Desconocido", "Terrestre", "Supertierra", "Tipo-Neptuno", "Gigante gaseoso"];
 const METODOS_DESCUBRIMIENTO = [

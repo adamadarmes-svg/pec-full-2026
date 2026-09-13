@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { campoSelect, campoSelectBare } from "../ui";
+import { campoSelect, campoSelectBare } from "@/ui";
 
 function FieldSelect({ value, onChange, options, variant = "box", className = "" }) {
   const [open, setOpen] = useState(false);

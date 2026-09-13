@@ -4,11 +4,11 @@ import {
   createExoplanet,
   updateExoplanet,
   deleteExoplanet,
-} from "../services/api";
-import ExoplanetList from "../components/ExoplanetList";
-import ExoplanetForm from "../components/ExoplanetForm";
-import FieldSelect from "../components/FieldSelect";
-import { btnPrimario, panelBase } from "../ui";
+} from "@/services/api";
+import ExoplanetList from "@/components/ExoplanetList";
+import ExoplanetForm from "@/components/ExoplanetForm";
+import FieldSelect from "@/components/FieldSelect";
+import { btnPrimario, panelBase } from "@/ui";
 
 function ExoplanetsPage() {
   const [exoplanetas, setExoplanetas] = useState([]);

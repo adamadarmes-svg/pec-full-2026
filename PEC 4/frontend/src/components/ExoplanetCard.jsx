@@ -1,4 +1,4 @@
-import { btnGhost, btnPeligro, cardBase } from "../ui";
+import { btnGhost, btnPeligro, cardBase } from "@/ui";
 
 function formatoNumero(valor, unidad) {
   if (valor === undefined || valor === null || valor === "") return "—";
