@@ -8,9 +8,12 @@ import {
 import ExoplanetList from "@/components/ExoplanetList";
 import ExoplanetForm from "@/components/ExoplanetForm";
 import FieldSelect from "@/components/FieldSelect";
+import { useNotification } from "@/context/NotificationContext";
 import { btnPrimario, panelBase } from "@/ui";
 
 function ExoplanetsPage() {
+  const notificar = useNotification();
+
   const [exoplanetas, setExoplanetas] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
@@ -49,6 +52,7 @@ function ExoplanetsPage() {
       const nuevo = await createExoplanet(datos);
       setExoplanetas((prev) => [nuevo, ...prev]);
       setMostrarFormulario(false);
+      notificar("Exoplaneta creado correctamente", "exito");
     } finally {
       setEnviando(false);
     }
@@ -60,6 +64,7 @@ function ExoplanetsPage() {
       const actualizado = await updateExoplanet(id, datos);
       setExoplanetas((prev) => prev.map((e) => (e._id === id ? actualizado : e)));
       setEditandoId(null);
+      notificar("Exoplaneta actualizado correctamente", "exito");
     } finally {
       setEnviando(false);
     }
@@ -73,7 +78,7 @@ function ExoplanetsPage() {
       await deleteExoplanet(exoplaneta._id);
       setExoplanetas((prev) => prev.filter((e) => e._id !== exoplaneta._id));
     } catch (err) {
-      alert(err.message);
+      notificar(err.message, "error");
     }
   }
 

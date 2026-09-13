@@ -44,3 +44,7 @@ export function deleteExoplanet(id) {
     method: "DELETE",
   });
 }
+
+export function getExoplanet(id) {
+  return request(`/api/exoplanets/${id}`);
+}

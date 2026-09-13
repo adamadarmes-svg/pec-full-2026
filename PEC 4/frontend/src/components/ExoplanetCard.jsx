@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { btnGhost, btnPeligro, cardBase } from "@/ui";
 
 function formatoNumero(valor, unidad) {
@@ -71,14 +72,23 @@ function ExoplanetCard({ exoplaneta, onEdit, onDelete }) {
         <p className="border-t border-border pt-4 text-sm leading-relaxed text-ink-dim">{descripcion}</p>
       )}
 
-      <footer className="mt-auto flex gap-2 border-t border-border pt-4">
-        <button type="button" className={btnGhost} onClick={() => onEdit(exoplaneta)}>
-          Editar
-        </button>
-        <button type="button" className={btnPeligro} onClick={() => onDelete(exoplaneta)}>
-          Eliminar
-        </button>
-      </footer>
+      {(onEdit || onDelete) && (
+        <footer className="mt-auto flex gap-2 border-t border-border pt-4">
+          <Link to={`/exoplanetas/${exoplaneta._id}`} className={btnGhost}>
+            Ver detalle
+          </Link>
+          {onEdit && (
+            <button type="button" className={btnGhost} onClick={() => onEdit(exoplaneta)}>
+              Editar
+            </button>
+          )}
+          {onDelete && (
+            <button type="button" className={btnPeligro} onClick={() => onDelete(exoplaneta)}>
+              Eliminar
+            </button>
+          )}
+        </footer>
+      )}
     </article>
   );
 }
