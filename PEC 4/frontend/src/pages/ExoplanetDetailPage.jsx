@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getExoplanet } from "@/services/api";
 import ExoplanetCard from "@/components/ExoplanetCard";
+import { panelBase } from "@/ui";
 
 function ExoplanetDetailPage() {
   const { id } = useParams();
@@ -57,7 +58,53 @@ function ExoplanetDetailPage() {
           </div>
         )}
 
-        {!cargando && !error && exoplaneta && <ExoplanetCard {...exoplaneta} />}
+        {!cargando && !error && exoplaneta && (
+          <>
+            <ExoplanetCard {...exoplaneta} />
+
+            <section className={`${panelBase} mt-6`}>
+              <h2 className="mb-4 font-serif text-lg font-medium text-ink">Fuente de la publicación</h2>
+
+              {exoplaneta.fuentePrincipal ? (
+                <div>
+                  <p className="font-serif text-base text-ink">{exoplaneta.fuentePrincipal.titulo}</p>
+                  <p className="mt-1 text-sm text-ink-dim">{exoplaneta.fuentePrincipal.autores}</p>
+                  {(exoplaneta.fuentePrincipal.publicacion || exoplaneta.fuentePrincipal.anio) && (
+                    <p className="mt-1 text-sm text-ink-dim">
+                      {exoplaneta.fuentePrincipal.publicacion}
+                      {exoplaneta.fuentePrincipal.anio ? `, ${exoplaneta.fuentePrincipal.anio}` : ""}
+                    </p>
+                  )}
+                  {(exoplaneta.fuentePrincipal.doi || exoplaneta.fuentePrincipal.url) && (
+                    <a
+                      href={
+                        exoplaneta.fuentePrincipal.doi
+                          ? `https://doi.org/${exoplaneta.fuentePrincipal.doi}`
+                          : exoplaneta.fuentePrincipal.url
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 inline-block text-sm text-accent hover:text-accent-strong"
+                    >
+                      Ver publicación original ↗
+                    </a>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-ink-faint">
+                  Este registro no tiene una fuente bibliográfica asociada.
+                </p>
+              )}
+
+              {exoplaneta.creadoPor && (
+                <p className="mt-4 border-t border-border pt-4 text-xs uppercase tracking-wide text-ink-faint">
+                  Registrado por {exoplaneta.creadoPor.nombre}
+                  {exoplaneta.creadoPor.institucion ? ` · ${exoplaneta.creadoPor.institucion}` : ""}
+                </p>
+              )}
+            </section>
+          </>
+        )}
       </div>
     </div>
   );
