@@ -57,7 +57,7 @@ function ExoplanetDetailPage() {
           </div>
         )}
 
-        {!cargando && !error && exoplaneta && <ExoplanetCard exoplaneta={exoplaneta} />}
+        {!cargando && !error && exoplaneta && <ExoplanetCard {...exoplaneta} />}
       </div>
     </div>
   );

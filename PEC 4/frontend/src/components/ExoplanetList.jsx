@@ -29,7 +29,7 @@ function ExoplanetList({ exoplanetas, editandoId, onEdit, onCancelEdit, onUpdate
               />
             </div>
           ) : (
-            <ExoplanetCard exoplaneta={exoplaneta} onEdit={onEdit} onDelete={onDelete} />
+            <ExoplanetCard {...exoplaneta} onEdit={onEdit} onDelete={onDelete} />
           )}
         </li>
       ))}

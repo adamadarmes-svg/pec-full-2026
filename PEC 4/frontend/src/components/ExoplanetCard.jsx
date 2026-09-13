@@ -6,24 +6,25 @@ function formatoNumero(valor, unidad) {
   return `${valor} ${unidad}`;
 }
 
-function ExoplanetCard({ exoplaneta, onEdit, onDelete }) {
-  const {
-    nombre,
-    estrellaAnfitriona,
-    tipoEspectral,
-    tipoPlaneta,
-    masa,
-    radio,
-    periodoOrbital,
-    temperaturaEquilibrio,
-    distancia,
-    metodoDescubrimiento,
-    anioDescubrimiento,
-    zonaHabitable,
-    confirmado,
-    descripcion,
-  } = exoplaneta;
-
+function ExoplanetCard({
+  _id,
+  nombre,
+  estrellaAnfitriona,
+  tipoEspectral,
+  tipoPlaneta,
+  masa,
+  radio,
+  periodoOrbital,
+  temperaturaEquilibrio,
+  distancia,
+  metodoDescubrimiento,
+  anioDescubrimiento,
+  zonaHabitable,
+  confirmado,
+  descripcion,
+  onEdit,
+  onDelete,
+}) {
   const filas = [
     ["Masa", formatoNumero(masa, "M⊕")],
     ["Radio", formatoNumero(radio, "R⊕")],
@@ -74,16 +75,60 @@ function ExoplanetCard({ exoplaneta, onEdit, onDelete }) {
 
       {(onEdit || onDelete) && (
         <footer className="mt-auto flex gap-2 border-t border-border pt-4">
-          <Link to={`/exoplanetas/${exoplaneta._id}`} className={btnGhost}>
+          <Link to={`/exoplanetas/${_id}`} className={btnGhost}>
             Ver detalle
           </Link>
           {onEdit && (
-            <button type="button" className={btnGhost} onClick={() => onEdit(exoplaneta)}>
+            <button
+              type="button"
+              className={btnGhost}
+              onClick={() =>
+                onEdit({
+                  _id,
+                  nombre,
+                  estrellaAnfitriona,
+                  tipoEspectral,
+                  tipoPlaneta,
+                  masa,
+                  radio,
+                  periodoOrbital,
+                  temperaturaEquilibrio,
+                  distancia,
+                  metodoDescubrimiento,
+                  anioDescubrimiento,
+                  zonaHabitable,
+                  confirmado,
+                  descripcion,
+                })
+              }
+            >
               Editar
             </button>
           )}
           {onDelete && (
-            <button type="button" className={btnPeligro} onClick={() => onDelete(exoplaneta)}>
+            <button
+              type="button"
+              className={btnPeligro}
+              onClick={() =>
+                onDelete({
+                  _id,
+                  nombre,
+                  estrellaAnfitriona,
+                  tipoEspectral,
+                  tipoPlaneta,
+                  masa,
+                  radio,
+                  periodoOrbital,
+                  temperaturaEquilibrio,
+                  distancia,
+                  metodoDescubrimiento,
+                  anioDescubrimiento,
+                  zonaHabitable,
+                  confirmado,
+                  descripcion,
+                })
+              }
+            >
               Eliminar
             </button>
           )}
