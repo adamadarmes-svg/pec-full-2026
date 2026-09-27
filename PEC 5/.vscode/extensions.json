@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "mongodb.mongodb-vscode",
+    "humao.rest-client",
+    "rangav.vscode-thunder-client",
+    "dsznajder.es7-react-js-snippets",
+    "bradlc.vscode-tailwindcss",
+    "bierner.markdown-mermaid",
+    "mikestead.dotenv",
+    "esbenp.prettier-vscode"
+  ]
+}
