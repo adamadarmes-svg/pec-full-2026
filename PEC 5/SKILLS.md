@@ -1,9 +1,5 @@
 # SKILLS.md — Habilidades, prompts reutilizables y ajustes del proyecto
 
-> Qué se le ha pedido a la IA y **cómo**, en forma de "skills" reutilizables para próximos proyectos,
-> más la lista de **ajustes** que hay que hacer (o se han hecho) sobre lo que genera la IA.
-> Cada skill tiene su archivo detallado en [`.ai/skills/`](.ai/skills/).
-
 ## Índice de skills
 
 | Skill | Archivo | Para qué | Usada en |
@@ -48,6 +44,5 @@ Ajustes que hay que aplicar sobre el código generado por IA (✅ hecho · ⏳ p
 | A4 | `font-normal` en `inputClass` | `frontend/src/components/Field.jsx` | Los selects heredaban la negrita de la etiqueta | ✅ |
 | A5 | `dotenv.config({ quiet: true })` | `backend/src/config/env.js` | dotenv 17+ imprime un mensaje en cada arranque | ✅ |
 | A6 | Fechas mostradas con `timeZone: 'UTC'` | `frontend/src/utils/format.js` | Evitar que el gasto salga el día anterior | ✅ |
-| A7 | Poner las URLs reales en `@baseUrl` del `.http` y en `baseUrl` de Postman | `backend/requests/` | Probar producción | ⏳ |
-| A8 | `CORS_ORIGIN` = URL de Vercel en Render | Panel de Render | Si no, el navegador bloquea las peticiones | ⏳ |
-| A9 | Sustituir capturas por las de producción (con las fuentes cargadas) | `docs/screenshots/` | Las actuales son de la prueba local | ⏳ |
+| A7 | Poner las URLs reales en `@baseUrl` del `.http` y en `baseUrl` de Postman | `backend/requests/` | Probar producción | ✅ |
+| A8 | `CORS_ORIGIN` = URL de Vercel en Render | Panel de Render | Si no, el navegador bloquea las peticiones | ✅ |

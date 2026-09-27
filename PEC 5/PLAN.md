@@ -102,5 +102,5 @@ Registro cronológico de todo lo hecho (quién: 🤖 IA / 👤 alumno).
 | 2026-09-26 | 4 | 👤 | Rehíce todo el diseño: tema oscuro con verde menta de acento, marcos con esquinas, un color por categoría y animaciones (entrada de paneles, barra del resumen, aviso) que se quitan con `prefers-reduced-motion` | — |
 | 2026-09-27 | 1 | 👤 | Configuré Git y el editor: `.gitignore`, `.gitattributes`, `.prettierrc` y las extensiones recomendadas de VS Code | `chore(pec5): configuración de git y editor` |
 | 2026-09-27 | 6 | 👤 | Repasé la documentación, escribí la reflexión con mi experiencia y completé en el README lo que me tocaba a mí (herramientas, prompt inicial, errores E6–E8 y decisiones propias) | — |
-| _pendiente_ | 7 | 👤 | Subir la API a Render y el front a Vercel, y poner en Render el `CORS_ORIGIN` con la URL de Vercel | |
-| _pendiente_ | 7 | 👤 | Probar la app ya desplegada desde mi móvil (crear, editar, borrar) y poner las URLs reales en el README | |
+| 2026-09-27 | 7 | 👤 | Subir la API a Render y el front a Vercel, y poner en Render el `CORS_ORIGIN` con la URL de Vercel | |
+| 2026-09-27 | 7 | 👤 | Probar la app ya desplegada desde mi móvil (crear, editar, borrar) y poner las URLs reales en el README | |

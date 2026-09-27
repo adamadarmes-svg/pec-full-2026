@@ -3,6 +3,9 @@
 ###
 GET {{baseUrl}}/api/health
 
+# @baseUrl = http://localhost:4000
+@baseUrl = https://cuentas-claras-api-6n2h.onrender.com
+
 ###
 GET {{baseUrl}}/api/expenses/meta
 

@@ -6,8 +6,8 @@ Mini aplicación fullstack con **CRUD completo** de gastos: React + Vite en el f
 
 | | URL |
 | --- | --- |
-| 🌐 Aplicación (Vercel) | `https://________.vercel.app`|
-| ⚙️ API (Render) | `https://________.onrender.com/api/health` |
+| 🌐 Aplicación (Vercel) | `https://pec-full-2026-bxqh.vercel.app/`|
+| ⚙️ API (Render) | `https://cuentas-claras-api-6n2h.onrender.com/` |
 |Repositorio | [`https://github.com/adamadarmes-svg/pec-full-2026`](https://github.com/adamadarmes-svg/pec-full-2026) (carpeta `PEC 5`) |
 
 ## Funcionalidades
