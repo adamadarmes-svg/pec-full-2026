@@ -1,0 +1,75 @@
+@baseUrl = http://localhost:4000
+
+###
+GET {{baseUrl}}/api/health
+
+###
+GET {{baseUrl}}/api/expenses/meta
+
+###
+GET {{baseUrl}}/api/expenses
+
+###
+GET {{baseUrl}}/api/expenses?category=comida&month=2026-09
+
+###
+# @name createExpense
+POST {{baseUrl}}/api/expenses
+Content-Type: application/json
+
+{
+  "title": "Compra semanal",
+  "amount": 54.37,
+  "category": "comida",
+  "date": "2026-09-20",
+  "paymentMethod": "tarjeta",
+  "notes": "Mercado de Triana"
+}
+
+###
+@expenseId = {{createExpense.response.body.data.id}}
+
+###
+GET {{baseUrl}}/api/expenses/{{expenseId}}
+
+###
+PUT {{baseUrl}}/api/expenses/{{expenseId}}
+Content-Type: application/json
+
+{
+  "amount": 49.9,
+  "notes": "Con descuento de socio"
+}
+
+###
+DELETE {{baseUrl}}/api/expenses/{{expenseId}}
+
+###
+POST {{baseUrl}}/api/expenses
+Content-Type: application/json
+
+{
+  "amount": -3,
+  "category": "lujo"
+}
+
+###
+POST {{baseUrl}}/api/expenses
+Content-Type: application/json
+
+{
+  "title": "Prueba",
+  "amount": "abc"
+}
+
+###
+GET {{baseUrl}}/api/expenses/123
+
+###
+GET {{baseUrl}}/api/expenses/65f000000000000000000000
+
+###
+GET {{baseUrl}}/api/expenses?month=2026-13
+
+###
+GET {{baseUrl}}/api/no-existe

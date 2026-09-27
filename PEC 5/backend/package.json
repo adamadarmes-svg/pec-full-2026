@@ -1,0 +1,21 @@
+{
+  "name": "cuentas-claras-api",
+  "version": "1.0.0",
+  "description": "API REST de Cuentas Claras (CRUD de gastos) con Express y MongoDB",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.3",
+    "express": "^5.2.1",
+    "mongoose": "^9.10.2"
+  }
+}
