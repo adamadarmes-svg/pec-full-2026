@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import { User } from "../models/user-model";
 import { generarToken } from "../utils/jwt";
-import { IUser, RespuestaAuth, RespuestaError, UsuarioPublico } from "../types";
+import { responderError } from "../utils/responder";
+import { IUser, RespuestaAuth, UsuarioPublico } from "../types";
 
 interface CuerpoRegistro {
   nombre?: string;
@@ -22,11 +23,6 @@ const LONGITUD_MINIMA_PASSWORD = 6;
 function usuarioSinPassword(usuario: IUser): UsuarioPublico {
   const { password, ...publico } = usuario.toObject<UsuarioPublico & { password?: string }>();
   return publico;
-}
-
-function responderError(res: Response, status: number, error: string, mensaje: string): void {
-  const cuerpo: RespuestaError = { error, mensaje };
-  res.status(status).json(cuerpo);
 }
 
 // El esquema guarda el email en minúsculas, así que hay que buscarlo igual

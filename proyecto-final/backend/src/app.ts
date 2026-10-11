@@ -22,7 +22,11 @@ app.use(cors());
 // local; "combined" es el formato estándar de Apache, con IP y user-agent.
 app.use(morgan(ENV.NODE_ENV === "production" ? "combined" : "dev", { stream: morganStream }));
 
-app.use(express.json());
+// Límite de 10 MB (el de serie es 100 KB) porque las imágenes subidas viajan
+// en Base64 dentro del JSON. En Vercel manda además el límite de la
+// plataforma (4,5 MB por petición), que se controla en el image-controller.
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
 // Asegura la conexión a MongoDB antes de cada petición. En Vercel la función
 // puede arrancar en frío y atender la petición antes de que termine la

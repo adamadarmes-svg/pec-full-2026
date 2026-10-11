@@ -9,8 +9,8 @@ import { proteger, soloAdmin } from "../middlewares/auth-middleware";
 //   de usuarios va por /api/auth/registro, que siempre asigna "investigador".
 const router = Router();
 
-router.get("/", proteger, soloAdmin, ctrl.getUsers);
-router.get("/:id", proteger, soloAdmin, ctrl.getUser);
-router.post("/", proteger, soloAdmin, ctrl.createUser);
+router.get("/", proteger, soloAdmin, ctrl.listarUsuarios);
+router.get("/:id", proteger, soloAdmin, ctrl.obtenerUsuario);
+router.post("/", proteger, soloAdmin, ctrl.crearUsuario);
 
 export default router;

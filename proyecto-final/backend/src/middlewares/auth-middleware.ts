@@ -2,7 +2,8 @@ import { NextFunction, Request, Response } from "express";
 import { Types } from "mongoose";
 import { User } from "../models/user-model";
 import { verificarToken } from "../utils/jwt";
-import { RespuestaError } from "../types";
+import { responderError } from "../utils/responder";
+import { IUser } from "../types";
 
 // Extrae el token de la cabecera "Authorization: Bearer TOKEN", o null si no viene
 function extraerToken(req: Request): string | null {
@@ -10,13 +11,6 @@ function extraerToken(req: Request): string | null {
   if (!cabecera?.startsWith("Bearer ")) return null;
   const token = cabecera.slice("Bearer ".length).trim();
   return token || null;
-}
-
-// Mismo formato { error, mensaje } que el errorHandler, para que el cliente
-// trate igual todos los errores
-function responderError(res: Response, status: number, error: string, mensaje: string): void {
-  const cuerpo: RespuestaError = { error, mensaje };
-  res.status(status).json(cuerpo);
 }
 
 // Exige un usuario autenticado y activo. Se busca en la BD en cada petición
@@ -86,9 +80,21 @@ export async function soloAdmin(req: Request, res: Response, next: NextFunction)
 
 // Para recursos con propietario (imágenes, observaciones): puede modificarlos
 // su autor o un administrador. Se compara en texto porque un ObjectId y un
-// string con el mismo id no son iguales con ===.
-export function esAutorOAdmin(req: Request, idPropietario: Types.ObjectId | string): boolean {
+// string con el mismo id no son iguales con ===. Un recurso sin propietario
+// (datos antiguos sin creadoPor) solo lo puede tocar un administrador.
+export function esAutorOAdmin(req: Request, idPropietario: Types.ObjectId | string | null | undefined): boolean {
   const usuario = req.usuario;
   if (!usuario) return false;
-  return usuario.rol === "admin" || String(usuario._id) === String(idPropietario);
+  if (usuario.rol === "admin") return true;
+  return Boolean(idPropietario) && String(usuario._id) === String(idPropietario);
+}
+
+// Devuelve el usuario autenticado en controladores que van detrás de
+// proteger. Si falta es un error de programación (ruta montada sin proteger),
+// por eso lanza y acaba en un 500 en lugar de responder 401.
+export function exigirUsuario(req: Request): IUser {
+  if (!req.usuario) {
+    throw new Error("Ruta protegida sin el middleware proteger: req.usuario no está definido");
+  }
+  return req.usuario;
 }
