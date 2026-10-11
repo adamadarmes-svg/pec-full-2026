@@ -1,8 +1,14 @@
-import type { Opcion } from "@/types";
+import type {
+  FormatoImagen,
+  MetodoDescubrimiento,
+  Opcion,
+  OrigenImagen,
+  RolUsuario,
+  TipoObservacion,
+  TipoPlaneta,
+} from "@/types";
 
-// Valores de dominio. Deben coincidir exactamente con los enums del backend,
-// tildes incluidas: si difieren, la API rechaza el dato con un 400.
-// Los union types de types/index.ts se derivan de estos arrays.
+// tienen que ser iguales que en el backend, tildes incluidas, o la api los rechaza
 export const TIPOS_PLANETA = ["Terrestre", "Supertierra", "Tipo-Neptuno", "Gigante gaseoso", "Desconocido"] as const;
 
 export const METODOS_DESCUBRIMIENTO = [
@@ -22,32 +28,56 @@ export const ORIGENES_IMAGEN = ["subida", "enlace"] as const;
 
 export const ROLES = ["admin", "investigador"] as const;
 
-// Opciones para los select. Cuando el valor ya es legible se usa como etiqueta.
-function aOpciones<T extends string>(valores: readonly T[]): Opcion<T>[] {
-  return valores.map((valor) => ({ value: valor, label: valor }));
+// uso etiquetas propias en vez de text-transform para dejar con mayúscula Neptuno, Júpiter y Tierra
+export const ETIQUETAS_TIPO_PLANETA: Record<TipoPlaneta, string> = {
+  Terrestre: "terrestre",
+  Supertierra: "supertierra",
+  "Tipo-Neptuno": "tipo Neptuno",
+  "Gigante gaseoso": "gigante gaseoso",
+  Desconocido: "tipo desconocido",
+};
+
+export const ETIQUETAS_METODO_DESCUBRIMIENTO: Record<MetodoDescubrimiento, string> = {
+  Tránsito: "tránsito",
+  "Velocidad radial": "velocidad radial",
+  "Imagen directa": "imagen directa",
+  Microlente: "microlente",
+  Astrometría: "astrometría",
+  Otro: "otro método",
+};
+
+export const ETIQUETAS_TIPO_OBSERVACION: Record<TipoObservacion, string> = {
+  Observación: "observación",
+  Corrección: "corrección",
+  Pregunta: "pregunta",
+  Referencia: "referencia",
+};
+
+export const ETIQUETAS_ORIGEN_IMAGEN: Record<OrigenImagen, string> = {
+  subida: "subir archivo",
+  enlace: "enlace externo",
+};
+
+export const ETIQUETAS_ROL: Record<RolUsuario, string> = {
+  admin: "administrador",
+  investigador: "investigador",
+};
+
+function aOpciones<T extends string>(valores: readonly T[], etiquetas: Record<T, string>): Opcion<T>[] {
+  return valores.map((valor) => ({ value: valor, label: etiquetas[valor] }));
 }
 
-export const OPCIONES_TIPO_PLANETA = aOpciones(TIPOS_PLANETA);
-export const OPCIONES_METODO_DESCUBRIMIENTO = aOpciones(METODOS_DESCUBRIMIENTO);
-export const OPCIONES_TIPO_OBSERVACION = aOpciones(TIPOS_OBSERVACION);
-
-export const OPCIONES_FORMATO_IMAGEN: Opcion<(typeof FORMATOS_IMAGEN)[number]>[] = FORMATOS_IMAGEN.map((formato) => ({
+export const OPCIONES_TIPO_PLANETA = aOpciones(TIPOS_PLANETA, ETIQUETAS_TIPO_PLANETA);
+export const OPCIONES_METODO_DESCUBRIMIENTO = aOpciones(METODOS_DESCUBRIMIENTO, ETIQUETAS_METODO_DESCUBRIMIENTO);
+export const OPCIONES_TIPO_OBSERVACION = aOpciones(TIPOS_OBSERVACION, ETIQUETAS_TIPO_OBSERVACION);
+export const OPCIONES_ORIGEN_IMAGEN = aOpciones(ORIGENES_IMAGEN, ETIQUETAS_ORIGEN_IMAGEN);
+export const OPCIONES_ROL = aOpciones(ROLES, ETIQUETAS_ROL);
+export const OPCIONES_FORMATO_IMAGEN: Opcion<FormatoImagen>[] = FORMATOS_IMAGEN.map((formato) => ({
   value: formato,
-  label: formato.toUpperCase(),
+  label: formato,
 }));
 
-export const OPCIONES_ORIGEN_IMAGEN: Opcion<(typeof ORIGENES_IMAGEN)[number]>[] = [
-  { value: "subida", label: "Subir archivo" },
-  { value: "enlace", label: "Enlace externo" },
-];
-
-export const OPCIONES_ROL: Opcion<(typeof ROLES)[number]>[] = [
-  { value: "admin", label: "Administrador" },
-  { value: "investigador", label: "Investigador" },
-];
-
-// Límites que replica el frontend para avisar antes de enviar. La validación
-// definitiva sigue siendo la del backend.
+// los repito aquí para avisar antes de enviar
 export const LIMITES = {
   TITULO_IMAGEN: 120,
   DESCRIPCION_IMAGEN: 500,
@@ -55,13 +85,11 @@ export const LIMITES = {
   OBSERVACION_MAX: 1000,
   PASSWORD_MIN: 6,
   ANIO_MIN_DESCUBRIMIENTO: 1988,
-  // Límite de la cadena Base64 que acepta la API (por el máximo de 4,5 MB por
-  // petición de Vercel). Base64 ocupa un tercio más que el archivo, así que
-  // el archivo original puede pesar como mucho unos 3000 KB.
+  // base64 ocupa un tercio más, por eso el archivo original no puede pasar de unos 3000 kb
   IMAGEN_BASE64_MAX_KB: 4000,
   IMAGEN_ARCHIVO_MAX_KB: 3000,
+  // apunto a la mitad del máximo para dejar margen al resto de la petición
+  IMAGEN_BASE64_OBJETIVO_KB: 2048,
 } as const;
 
-// Exoplanetas por página en el catálogo: múltiplo de 2, 3 y 4 para que la
-// rejilla quede completa en cualquier número de columnas
 export const POR_PAGINA = 12;

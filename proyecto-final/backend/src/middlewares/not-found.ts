@@ -1,11 +1,10 @@
 import { Request, Response } from "express";
 
-// Se monta después de todas las rutas: si la petición llega aquí es que
-// ninguna coincidió, y respondemos 404 en JSON en vez del HTML de Express.
+// lo monté al final para que solo salte si ninguna ruta coincide y responda en json
 export function notFound(req: Request, res: Response): void {
   res.status(404).json({
     error: "Not Found",
-    mensaje: `La ruta ${req.method} ${req.originalUrl} no existe.`,
+    mensaje: `no existe la ruta ${req.method} ${req.originalUrl}.`,
   });
 }
 

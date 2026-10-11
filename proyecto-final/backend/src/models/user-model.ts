@@ -6,22 +6,22 @@ const userSchema = new Schema<IUser>(
   {
     nombre: {
       type: String,
-      required: [true, "El nombre es obligatorio"],
+      required: [true, "falta el nombre."],
       trim: true,
     },
     email: {
       type: String,
-      required: [true, "El email es obligatorio"],
+      required: [true, "falta el email."],
       unique: true,
       lowercase: true,
       trim: true,
-      match: [/^\S+@\S+\.\S+$/, "El formato del email no es válido"],
+      match: [/^\S+@\S+\.\S+$/, "el email no es válido."],
     },
     password: {
       type: String,
-      required: [true, "La contraseña es obligatoria"],
-      minlength: [4, "La contraseña debe tener al menos 4 caracteres"],
-      // Nunca se devuelve en las consultas salvo que se pida con .select("+password")
+      required: [true, "falta la contraseña."],
+      minlength: [4, "la contraseña necesita al menos 4 caracteres."],
+      // lo escondo por defecto para que nunca salga en una consulta normal
       select: false,
     },
     institucion: {
@@ -44,16 +44,14 @@ const userSchema = new Schema<IUser>(
   }
 );
 
-// Hashea la contraseña antes de guardar. Solo si ha cambiado, para no
-// volver a hashear un hash al actualizar otros campos del usuario.
+// solo hasheo si cambió para no hashear un hash al editar otros campos
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });
 
-// Compara una contraseña en texto plano con el hash guardado (para el login).
-// Requiere que el documento se haya cargado con .select("+password").
+// necesita el documento cargado con select("+password") porque si no no hay hash que comparar
 userSchema.methods.compararPassword = async function (
   this: IUser,
   passwordPlano: string

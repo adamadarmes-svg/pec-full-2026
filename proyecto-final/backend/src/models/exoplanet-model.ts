@@ -5,13 +5,13 @@ const exoplanetSchema = new Schema<IExoplanet>(
   {
     nombre: {
       type: String,
-      required: [true, "El nombre del exoplaneta es obligatorio"],
+      required: [true, "falta el nombre."],
       unique: true,
       trim: true,
     },
     estrellaAnfitriona: {
       type: String,
-      required: [true, "La estrella anfitriona es obligatoria"],
+      required: [true, "falta la estrella anfitriona."],
       trim: true,
     },
     tipoEspectral: {
@@ -22,42 +22,42 @@ const exoplanetSchema = new Schema<IExoplanet>(
       type: String,
       enum: {
         values: TIPOS_PLANETA,
-        message: "{VALUE} no es un tipo de planeta válido",
+        message: "{VALUE} no es un tipo de planeta válido.",
       },
       default: "Desconocido",
     },
-    // Magnitudes físicas: solo se valida que no sean negativas
+    // solo valido que no sean negativas porque los rangos reales son enormes
     masa: {
       type: Number,
-      min: [0, "La masa no puede ser negativa"],
+      min: [0, "la masa no puede ser negativa."],
     },
     radio: {
       type: Number,
-      min: [0, "El radio no puede ser negativo"],
+      min: [0, "el radio no puede ser negativo."],
     },
     periodoOrbital: {
       type: Number,
-      min: [0, "El periodo orbital no puede ser negativo"],
+      min: [0, "el periodo orbital no puede ser negativo."],
     },
     temperaturaEquilibrio: {
       type: Number,
-      min: [0, "La temperatura en kelvin no puede ser negativa"],
+      min: [0, "la temperatura no puede ser negativa."],
     },
     distancia: {
       type: Number,
-      min: [0, "La distancia no puede ser negativa"],
+      min: [0, "la distancia no puede ser negativa."],
     },
     metodoDescubrimiento: {
       type: String,
       enum: {
         values: METODOS_DESCUBRIMIENTO,
-        message: "{VALUE} no es un método de descubrimiento válido",
+        message: "{VALUE} no es un método de descubrimiento válido.",
       },
     },
     anioDescubrimiento: {
       type: Number,
-      min: [1988, "El primer exoplaneta se detectó en 1988"],
-      max: [new Date().getFullYear() + 1, "El año no puede ser futuro"],
+      min: [1988, "el año mínimo es 1988."],
+      max: [new Date().getFullYear() + 1, "el año no puede ser futuro."],
     },
     zonaHabitable: {
       type: Boolean,
@@ -75,7 +75,6 @@ const exoplanetSchema = new Schema<IExoplanet>(
       type: Schema.Types.ObjectId,
       ref: "Image",
     },
-    // Referencias a otras colecciones, resueltas con populate en el controlador
     fuentePrincipal: {
       type: Schema.Types.ObjectId,
       ref: "Source",
@@ -91,7 +90,7 @@ const exoplanetSchema = new Schema<IExoplanet>(
   }
 );
 
-// Índices en los campos por los que más se filtra el catálogo
+// puse índices en los campos por los que más se filtra
 exoplanetSchema.index({ tipoPlaneta: 1 });
 exoplanetSchema.index({ zonaHabitable: 1 });
 

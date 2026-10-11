@@ -5,7 +5,7 @@ export type TipoNotificacion = "exito" | "error";
 interface Notificacion {
   mensaje: string;
   tipo: TipoNotificacion;
-  // Distingue dos notificaciones seguidas con el mismo texto
+  // el id sirve para distinguir dos avisos iguales seguidos
   id: number;
 }
 
@@ -15,35 +15,35 @@ const DURACION_MS = 4000;
 
 const NotificationContext = createContext<Notificar | null>(null);
 
+// le puse el color del fondo para que se lea encima del contenido
 const ESTILOS_POR_TIPO: Record<TipoNotificacion, string> = {
-  exito: "border-accent/40 bg-accent-dim text-accent-strong",
-  error: "border-peligro/40 bg-peligro-dim text-peligro",
+  exito: "border-acento text-tinta",
+  error: "border-peligro text-peligro",
 };
 
 function NotificationToast({ notificacion }: { notificacion: Notificacion | null }) {
   if (!notificacion) return null;
 
   return (
-    <div className="pointer-events-none fixed right-6 top-6 z-50 flex justify-end">
-      {/* role="status" hace que los lectores de pantalla anuncien el mensaje */}
-      <div
+    <div className="pointer-events-none fixed bottom-6 left-5 right-5 z-50 md:left-auto md:right-10 md:max-w-sm">
+      {/* uso role status para que el lector de pantalla lo anuncie */}
+      <p
         role="status"
-        className={`frame pointer-events-auto border px-5 py-3 text-sm shadow-lg backdrop-blur-xl ${ESTILOS_POR_TIPO[notificacion.tipo]}`}
+        className={`pointer-events-auto m-0 border-l bg-fondo py-2 pl-4 pr-2 text-apoyo ${ESTILOS_POR_TIPO[notificacion.tipo]}`}
       >
         {notificacion.mensaje}
-      </div>
+      </p>
     </div>
   );
 }
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
-  // Una sola notificación a la vez: la nueva sustituye a la anterior
+  // solo una a la vez para que no se apilen
   const [notificacion, setNotificacion] = useState<Notificacion | null>(null);
   const temporizadorRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const notificar = useCallback<Notificar>((mensaje, tipo = "exito") => {
-    // Se cancela el temporizador anterior para que no oculte antes de tiempo
-    // la notificación nueva
+    // cancelo el temporizador anterior para que no oculte el aviso nuevo antes de tiempo
     if (temporizadorRef.current) {
       clearTimeout(temporizadorRef.current);
     }
@@ -56,7 +56,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     }, DURACION_MS);
   }, []);
 
-  // Al desmontar se limpia el temporizador pendiente
+  // limpio el temporizador al desmontar para no tocar un componente que ya no existe
   useEffect(() => {
     return () => {
       if (temporizadorRef.current) clearTimeout(temporizadorRef.current);

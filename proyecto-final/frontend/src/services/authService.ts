@@ -9,8 +9,7 @@ export function iniciarSesion(datos: DatosLogin): Promise<RespuestaAuth> {
   return post<RespuestaAuth>("/auth/login", datos);
 }
 
-// La API envuelve el usuario en { usuario }; aquí se desenvuelve para que
-// quien llame reciba directamente el Usuario
+// desenvuelvo el usuario para que quien llame lo reciba directo
 export async function obtenerPerfil(signal?: AbortSignal): Promise<Usuario> {
   const respuesta = await get<{ usuario: Usuario }>("/auth/perfil", signal);
   return respuesta.usuario;

@@ -1,12 +1,10 @@
 import dotenv from "dotenv";
 import type { SignOptions } from "jsonwebtoken";
 
-// Centralizar aquí las variables evita repetir process.env por todo el código,
-// y así se validan una sola vez al arrancar en lugar de fallar más tarde.
+// leo y valido las variables aquí una vez para que si falta una falle el arranque y no una petición cualquiera
 dotenv.config();
 
-// Duración en el formato que acepta jsonwebtoken ("7d", "12h", "30 m"...).
-// Se deriva de SignOptions para no depender directamente de la librería ms.
+// saqué el tipo de SignOptions para no depender de ms, que viene de rebote con jsonwebtoken
 type DuracionJwt = Extract<NonNullable<SignOptions["expiresIn"]>, string>;
 
 interface Entorno {
@@ -15,17 +13,15 @@ interface Entorno {
   JWT_SECRET: string;
   JWT_EXPIRES_IN: DuracionJwt;
   NODE_ENV: string;
-  // Sin valor por defecto aquí: logger.ts decide el nivel según el entorno
+  CORS_ORIGINS: string[];
+  // lo dejé sin valor por defecto porque el nivel lo decide logger.ts según el entorno
   LOG_LEVEL: string | undefined;
-  // Solo las usa el script crear-admin, por eso pueden faltar
+  // las dejé opcionales porque solo las usa crear-admin
   ADMIN_EMAIL: string | undefined;
   ADMIN_PASSWORD: string | undefined;
 }
 
-// Type guard: process.env solo da string, y jsonwebtoken exige un literal
-// con formato de duración. Validar el formato es lo que permite a TypeScript
-// estrechar el tipo sin castings. Se exige la unidad porque jsonwebtoken
-// interpreta un número sin unidad como milisegundos ("3600" = 3,6 segundos).
+// hice un type guard porque jsonwebtoken no acepta un string cualquiera y exijo la unidad porque sin ella lee milisegundos
 function esDuracionJwt(valor: string): valor is DuracionJwt {
   return /^\d+(\.\d+)? ?(ms|msecs?|milliseconds?|s|secs?|seconds?|m|mins?|minutes?|h|hrs?|hours?|d|days?|w|weeks?|y|yrs?|years?)$/i.test(
     valor
@@ -34,27 +30,49 @@ function esDuracionJwt(valor: string): valor is DuracionJwt {
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
-// Sin base de datos la API no puede funcionar: mejor fallar al arrancar
 if (!MONGODB_URI) {
   throw new Error(
-    "Falta la variable de entorno MONGODB_URI. Defínela en el archivo .env o en el panel de Vercel."
+    "falta MONGODB_URI. defínela en el .env o en vercel."
   );
 }
 
-// Sin secreto no se pueden firmar ni verificar tokens: la autenticación entera depende de él
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
   throw new Error(
-    "Falta la variable de entorno JWT_SECRET. Defínela en el archivo .env o en el panel de Vercel."
+    "falta JWT_SECRET. defínela en el .env o en vercel."
   );
 }
 
-// Un formato erróneo se detecta al arrancar, no en el primer login
+// prefiero que un formato malo falle al arrancar y no en el primer login
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
 if (!esDuracionJwt(JWT_EXPIRES_IN)) {
   throw new Error(
-    `JWT_EXPIRES_IN tiene un formato no válido ("${JWT_EXPIRES_IN}"). Usa un número con unidad, por ejemplo "7d", "12h" o "30m".`
+    `JWT_EXPIRES_IN no válido ("${JWT_EXPIRES_IN}"). usa un número con unidad: "7d", "12h" o "30m".`
   );
+}
+
+// pido el origen exacto y sin barra final porque el navegador lo manda así y si no coincide letra a letra cors lo rechaza
+const CORS_ORIGINS = (process.env.CORS_ORIGINS || "")
+  .split(",")
+  .map((origen) => origen.trim())
+  .filter(Boolean);
+if (CORS_ORIGINS.length === 0) {
+  throw new Error(
+    "falta CORS_ORIGINS. defínela en el .env o en vercel, separando los orígenes con comas."
+  );
+}
+for (const origen of CORS_ORIGINS) {
+  let valido = false;
+  try {
+    valido = new URL(origen).origin === origen;
+  } catch {
+    valido = false;
+  }
+  if (!valido) {
+    throw new Error(
+      `origen no válido en CORS_ORIGINS ("${origen}"). usa protocolo y dominio sin barra final: "https://ejemplo.vercel.app".`
+    );
+  }
 }
 
 export const ENV: Entorno = {
@@ -63,6 +81,7 @@ export const ENV: Entorno = {
   JWT_SECRET,
   JWT_EXPIRES_IN,
   NODE_ENV: process.env.NODE_ENV || "development",
+  CORS_ORIGINS,
   LOG_LEVEL: process.env.LOG_LEVEL || undefined,
   ADMIN_EMAIL: process.env.ADMIN_EMAIL || undefined,
   ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || undefined,

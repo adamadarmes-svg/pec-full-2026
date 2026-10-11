@@ -18,19 +18,17 @@ interface CuerpoLogin {
 
 const LONGITUD_MINIMA_PASSWORD = 6;
 
-// Quita el password antes de responder. Aunque el esquema lo oculta en las
-// consultas, sigue presente tras create() o tras un select("+password").
+// quito el password a mano porque después de create() sigue en el documento
 function usuarioSinPassword(usuario: IUser): UsuarioPublico {
   const { password, ...publico } = usuario.toObject<UsuarioPublico & { password?: string }>();
   return publico;
 }
 
-// El esquema guarda el email en minúsculas, así que hay que buscarlo igual
+// paso el email a minúsculas porque así lo guarda el esquema y si no no lo encontraba
 function normalizarEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
-// POST /api/auth/registro
 export async function registrarUsuario(
   req: Request<{}, unknown, CuerpoRegistro>,
   res: Response,
@@ -40,7 +38,7 @@ export async function registrarUsuario(
     const { nombre, email, password, institucion } = req.body;
 
     if (!nombre?.trim() || !email?.trim() || !password) {
-      responderError(res, 400, "Bad Request", "Nombre, email y contraseña son obligatorios.");
+      responderError(res, 400, "Bad Request", "faltan el nombre, el email o la contraseña.");
       return;
     }
     if (password.length < LONGITUD_MINIMA_PASSWORD) {
@@ -48,21 +46,19 @@ export async function registrarUsuario(
         res,
         400,
         "Bad Request",
-        `La contraseña debe tener al menos ${LONGITUD_MINIMA_PASSWORD} caracteres.`
+        `la contraseña necesita al menos ${LONGITUD_MINIMA_PASSWORD} caracteres.`
       );
       return;
     }
 
-    // Comprobación previa para dar un mensaje claro. Si dos registros llegan a
-    // la vez, el índice único lo frena igualmente y el errorHandler responde 409.
+    // lo compruebo antes solo para dar un mensaje claro, el índice único ya frena los duplicados
     const emailNormalizado = normalizarEmail(email);
     if (await User.exists({ email: emailNormalizado })) {
-      responderError(res, 409, "Conflict", "Ya existe una cuenta con ese email.");
+      responderError(res, 409, "Conflict", "ese email ya tiene cuenta. entra con él.");
       return;
     }
 
-    // El rol se fija aquí y nunca se lee del body: si se aceptara, cualquiera
-    // podría registrarse como admin (escalada de privilegios)
+    // fijé el rol aquí para que nadie pueda registrarse como admin desde el body
     const usuario = await User.create({
       nombre,
       email: emailNormalizado,
@@ -78,7 +74,6 @@ export async function registrarUsuario(
   }
 }
 
-// POST /api/auth/login
 export async function iniciarSesion(
   req: Request<{}, unknown, CuerpoLogin>,
   res: Response,
@@ -88,25 +83,22 @@ export async function iniciarSesion(
     const { email, password } = req.body;
 
     if (!email?.trim() || !password) {
-      responderError(res, 400, "Bad Request", "Email y contraseña son obligatorios.");
+      responderError(res, 400, "Bad Request", "escribe el email y la contraseña.");
       return;
     }
 
-    // select("+password") porque el esquema lo excluye por defecto y sin él
-    // compararPassword no tendría con qué comparar
+    // pido el password con select porque el esquema lo esconde y sin él no puedo compararlo
     const usuario = await User.findOne({ email: normalizarEmail(email) }).select("+password");
 
-    // Mismo mensaje si el email no existe o la contraseña falla: así no se
-    // puede averiguar qué emails están registrados probando el login
+    // uso el mismo mensaje en los dos casos para que no se pueda averiguar qué emails existen
     if (!usuario || !(await usuario.compararPassword(password))) {
-      responderError(res, 401, "Unauthorized", "Email o contraseña incorrectos.");
+      responderError(res, 401, "Unauthorized", "email o contraseña incorrectos.");
       return;
     }
 
-    // Se comprueba después de la contraseña para no revelar el estado de la
-    // cuenta a quien no conoce sus credenciales
+    // miro si está activa después de la contraseña para no dar pistas a quien no la sabe
     if (!usuario.activo) {
-      responderError(res, 403, "Forbidden", "Tu cuenta está desactivada. Contacta con un administrador.");
+      responderError(res, 403, "Forbidden", "tu cuenta está desactivada. habla con un administrador.");
       return;
     }
 
@@ -117,13 +109,11 @@ export async function iniciarSesion(
   }
 }
 
-// GET /api/auth/perfil (tras el middleware proteger)
 export async function obtenerPerfil(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    // proteger garantiza req.usuario; la comprobación es por si la ruta se
-    // montara alguna vez sin él
+    // lo compruebo por si algún día la ruta se monta sin proteger
     if (!req.usuario) {
-      responderError(res, 401, "Unauthorized", "Inicia sesión para ver tu perfil.");
+      responderError(res, 401, "Unauthorized", "entra para ver tu perfil.");
       return;
     }
     res.status(200).json({ usuario: usuarioSinPassword(req.usuario) });

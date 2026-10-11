@@ -1,13 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { POR_PAGINA } from "@/const/catalogo";
 import { esAbortError, mensajeDeError } from "@/services/api";
 import { listar } from "@/services/exoplanetaService";
 import type { Exoplaneta, FiltrosExoplanetas, Paginacion } from "@/types";
 
-// El estado va agrupado a propósito en un solo objeto: lista, paginación,
-// carga y error cambian siempre a la vez tras cada petición. Con un useState
-// por campo habría renders intermedios incoherentes (lista nueva con la
-// paginación vieja) y más llamadas a set que coordinar.
+// agrupé el estado porque lista, paginación, carga y error cambian a la vez y así no hay renders a medias
 interface EstadoExoplanetas {
   lista: Exoplaneta[];
   paginacion: Paginacion;
@@ -17,9 +14,21 @@ interface EstadoExoplanetas {
 
 const PAGINACION_INICIAL: Paginacion = { pagina: 1, limite: POR_PAGINA, total: 0, totalPaginas: 0 };
 
-// Filtros que se pueden cambiar con cambiarFiltro. La página va aparte
-// porque tiene su propia función.
-type ClaveFiltro = Exclude<keyof FiltrosExoplanetas, "pagina">;
+// la página va aparte porque tiene su propia función
+export type ClaveFiltro = Exclude<keyof FiltrosExoplanetas, "pagina">;
+
+// creadoPor y limite no cuentan como filtros porque los fija la página
+const FILTROS_DE_USUARIO: ClaveFiltro[] = [
+  "buscar",
+  "tipoPlaneta",
+  "tipos",
+  "metodoDescubrimiento",
+  "zonaHabitable",
+  "confirmado",
+  "anioDesde",
+  "anioHasta",
+  "distanciaMax",
+];
 
 function calcularTotalPaginas(total: number, limite: number): number {
   return Math.ceil(total / limite);
@@ -33,13 +42,9 @@ export function useExoplanetas(filtrosIniciales: FiltrosExoplanetas = {}) {
     error: null,
   });
 
-  // Los filtros van en otro useState porque son de otra naturaleza: los
-  // decide el usuario, mientras que el estado anterior lo decide la API
-  const [filtros, setFiltros] = useState<FiltrosExoplanetas>({
-    pagina: 1,
-    limite: POR_PAGINA,
-    ...filtrosIniciales,
-  });
+  // los filtros van aparte porque los decide el usuario y los guardo en una ref para poder volver a ellos
+  const inicialesRef = useRef<FiltrosExoplanetas>({ pagina: 1, limite: POR_PAGINA, ...filtrosIniciales });
+  const [filtros, setFiltros] = useState<FiltrosExoplanetas>(inicialesRef.current);
 
   const [version, setVersion] = useState(0);
 
@@ -57,12 +62,11 @@ export function useExoplanetas(filtrosIniciales: FiltrosExoplanetas = {}) {
         setEstado((previo) => ({ ...previo, cargando: false, error: mensajeDeError(error) }));
       });
 
-    // Si el usuario cambia de filtro antes de que llegue la respuesta, la
-    // petición anterior se cancela y no puede pisar la nueva
+    // cancelo la petición anterior para que no pise la nueva
     return () => controlador.abort();
   }, [filtros, version]);
 
-  // Un filtro nuevo vuelve a la primera página: la actual podría no existir
+  // vuelvo a la primera página porque la actual podría no existir
   const cambiarFiltro = useCallback(<K extends ClaveFiltro>(clave: K, valor: FiltrosExoplanetas[K]) => {
     setFiltros((previos) => ({ ...previos, [clave]: valor, pagina: 1 }));
   }, []);
@@ -71,12 +75,19 @@ export function useExoplanetas(filtrosIniciales: FiltrosExoplanetas = {}) {
     setFiltros((previos) => ({ ...previos, pagina }));
   }, []);
 
+  // vuelvo a los filtros iniciales sin perder los fijos como creadoPor
+  const limpiarFiltros = useCallback(() => {
+    setFiltros({ ...inicialesRef.current });
+  }, []);
+
   const recargar = useCallback(() => setVersion((v) => v + 1), []);
 
-  // Actualizaciones locales tras crear, editar o borrar, para reflejar el
-  // cambio al momento sin volver a pedir la página entera. Son aproximadas
-  // (un registro nuevo puede no cumplir los filtros activos); recargar() da
-  // el dato exacto.
+  const hayFiltros = FILTROS_DE_USUARIO.some((clave) => {
+    const valor = filtros[clave];
+    return Array.isArray(valor) ? valor.length > 0 : valor !== undefined && valor !== "";
+  });
+
+  // actualizo en local para no pedir otra vez la página entera
   const agregarLocal = useCallback((exoplaneta: Exoplaneta) => {
     setEstado((previo) => {
       const total = previo.paginacion.total + 1;
@@ -117,7 +128,9 @@ export function useExoplanetas(filtrosIniciales: FiltrosExoplanetas = {}) {
   return {
     ...estado,
     filtros,
+    hayFiltros,
     cambiarFiltro,
+    limpiarFiltros,
     cambiarPagina,
     recargar,
     agregarLocal,

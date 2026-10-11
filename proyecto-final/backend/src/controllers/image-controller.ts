@@ -6,13 +6,10 @@ import { esAutorOAdmin, exigirUsuario } from "../middlewares/auth-middleware";
 import { responderError } from "../utils/responder";
 import { FormatoImagen, IImage } from "../types";
 
-// Límite de la cadena Base64 que viaja en la petición. Vercel rechaza
-// cualquier petición de más de 4,5 MB antes de que llegue a Express; con
-// 4000 KB queda margen para el resto del JSON y se puede dar un mensaje claro.
+// puse 4000 kb para dejar margen dentro de los 4,5 mb que admite vercel
 const LIMITE_BASE64_KB = 4000;
 
-// Solo formatos rasterizados. SVG queda fuera a propósito: puede contener
-// scripts y /archivo lo serviría desde el dominio de la API.
+// dejé fuera svg porque puede llevar scripts
 const PATRON_DATA_URI = /^data:image\/(jpeg|png|webp|gif);base64,(.+)$/;
 
 interface CuerpoImagen {
@@ -26,8 +23,7 @@ interface CuerpoImagen {
   exoplaneta?: string;
 }
 
-// Qué imágenes puede ver quien hace la petición:
-// anónimo -> solo publicadas; investigador -> publicadas + las suyas; admin -> todas
+// cada uno ve lo suyo: anónimo solo publicadas, investigador además las suyas y admin todas
 function filtroVisibilidad(req: Request): FilterQuery<IImage> {
   const usuario = req.usuario;
   if (!usuario) return { publicada: true };
@@ -39,35 +35,30 @@ function puedeVer(req: Request, imagen: IImage): boolean {
   return imagen.publicada || esAutorOAdmin(req, imagen.subidaPor);
 }
 
-// 404 también para imágenes sin publicar que el usuario no puede ver: un 403
-// confirmaría que existen
+// respondo 404 y no 403 para no confirmar que la imagen existe
 function noEncontrada(res: Response): void {
-  responderError(res, 404, "Not Found", "Imagen no encontrada");
+  responderError(res, 404, "Not Found", "imagen no encontrada.");
 }
 
-// Quita el Base64 de las respuestas de escritura: el cliente ya lo tiene y
-// devolverlo duplicaría varios MB de tráfico
+// quito el base64 de la respuesta porque el cliente ya lo tiene
 function sinDatos(imagen: IImage): Omit<IImage, "datos"> {
   const { datos, ...resto } = imagen.toObject();
   return resto;
 }
 
-// Tamaño real en KB de la imagen codificada en Base64: cada 4 caracteres son
-// 3 bytes, menos el relleno "=" del final
+// cada 4 caracteres base64 son 3 bytes, por eso calculo así el tamaño real
 function calcularTamanoKb(base64: string): number {
   const relleno = base64.endsWith("==") ? 2 : base64.endsWith("=") ? 1 : 0;
   const bytes = (base64.length * 3) / 4 - relleno;
   return Math.round(bytes / 1024);
 }
 
-// GET /api/images (con opcional): filtra por exoplaneta si viene ?exoplaneta=
 export async function listarImagenes(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const filtro = filtroVisibilidad(req);
     if (typeof req.query.exoplaneta === "string") filtro.exoplaneta = req.query.exoplaneta;
 
-    // datos nunca viaja en listados: con varias subidas se superarían los 4,5 MB
-    // de respuesta de Vercel. Para mostrarla se usa url o /:id/archivo.
+    // nunca mando datos en un listado porque pasaría de los 4,5 mb de vercel
     const imagenes = await Image.find(filtro)
       .select("-datos")
       .populate("subidaPor", "nombre")
@@ -80,11 +71,9 @@ export async function listarImagenes(req: Request, res: Response, next: NextFunc
   }
 }
 
-// GET /api/images/:id (con opcional): detalle completo, incluido el Base64
 export async function obtenerImagen(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    // La visibilidad se comprueba antes del populate: después subidaPor
-    // sería un documento y no un id, y la comparación de autoría fallaría
+    // compruebo la autoría antes del populate porque después subidaPor ya no es un id
     const imagen = await Image.findById(req.params.id);
     if (!imagen || !puedeVer(req, imagen)) {
       noEncontrada(res);
@@ -100,8 +89,7 @@ export async function obtenerImagen(req: Request, res: Response, next: NextFunct
   }
 }
 
-// GET /api/images/:id/archivo (con opcional): la imagen subida en binario,
-// para usarla directamente en <img src="..."> desde el frontend
+// hice esta ruta binaria para poder usar la imagen en un img sin pasar el base64 por json
 export async function obtenerArchivoImagen(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const imagen = await Image.findById(req.params.id);
@@ -110,21 +98,18 @@ export async function obtenerArchivoImagen(req: Request, res: Response, next: Ne
       return;
     }
     if (imagen.origen !== "subida") {
-      responderError(res, 400, "Bad Request", "Esta imagen es un enlace externo: usa su campo url.");
+      responderError(res, 400, "Bad Request", "es un enlace externo: usa su url.");
       return;
     }
     const partes = PATRON_DATA_URI.exec(imagen.datos ?? "");
     if (!partes) {
-      responderError(res, 500, "Internal Server Error", "Los datos guardados de la imagen no son válidos.");
+      responderError(res, 500, "Internal Server Error", "los datos guardados de la imagen están dañados.");
       return;
     }
 
-    // helmet pone Cross-Origin-Resource-Policy: same-origin en todas las
-    // respuestas, y con ella el navegador bloquea la imagen cuando la pide un
-    // <img> del frontend, que está en otro dominio, sin mostrar ningún error.
-    // Se relaja solo en esta ruta, que sirve contenido pensado para incrustarse.
+    // relajé cross-origin-resource-policy solo aquí porque helmet la pone en same-origin y el navegador bloqueaba la imagen en el frontend
     res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-    // Las publicadas se pueden cachear; las privadas no, porque solo las ve su autor
+    // solo cacheo las publicadas porque las privadas solo las ve su autor
     res.setHeader("Cache-Control", imagen.publicada ? "public, max-age=86400" : "private, no-store");
     res.type(`image/${partes[1]}`);
     res.status(200).send(Buffer.from(partes[2], "base64"));
@@ -133,7 +118,6 @@ export async function obtenerArchivoImagen(req: Request, res: Response, next: Ne
   }
 }
 
-// POST /api/images (protegida)
 export async function crearImagen(
   req: Request<{}, unknown, CuerpoImagen>,
   res: Response,
@@ -144,12 +128,11 @@ export async function crearImagen(
     const { titulo, descripcion, origen, datos, url, formato, creditoAutor, exoplaneta } = req.body;
 
     if (!exoplaneta || !(await Exoplanet.exists({ _id: exoplaneta }))) {
-      responderError(res, 404, "Not Found", "El exoplaneta indicado no existe.");
+      responderError(res, 404, "Not Found", "ese exoplaneta no existe.");
       return;
     }
 
-    // Solo se copian los campos permitidos: subidaPor sale del token y
-    // publicada empieza siempre en false, porque solo un admin publica
+    // copio solo los campos permitidos para que subidaPor y publicada no vengan del body
     const nueva: Partial<Record<keyof IImage, unknown>> = {
       titulo,
       descripcion,
@@ -167,7 +150,7 @@ export async function crearImagen(
           res,
           400,
           "Bad Request",
-          "datos debe ser una imagen en Base64 con el formato data:image/(jpeg|png|webp|gif);base64,..."
+          "datos debe ser una imagen jpeg, png, webp o gif en base64."
         );
         return;
       }
@@ -176,23 +159,23 @@ export async function crearImagen(
           res,
           413,
           "Payload Too Large",
-          `La imagen supera el máximo de ${LIMITE_BASE64_KB} KB en Base64 (unos 3 MB de imagen). El límite lo impone la plataforma de despliegue, que no acepta peticiones de más de 4,5 MB.`
+          `la imagen pasa de ${LIMITE_BASE64_KB} kilobytes codificada, el máximo que admite vercel. redúcela y vuelve a subirla.`
         );
         return;
       }
-      // El formato se deduce de los propios datos para que no pueda contradecirlos
+      // saco el formato de los datos para que no pueda contradecirlos
       nueva.datos = datos;
       nueva.formato = partes[1];
       nueva.tamanoKb = calcularTamanoKb(partes[2]);
     } else if (origen === "enlace") {
       if (url && !/^https?:\/\//i.test(url)) {
-        responderError(res, 400, "Bad Request", "La url de la imagen debe empezar por http:// o https://");
+        responderError(res, 400, "Bad Request", "la url debe empezar por http:// o https://");
         return;
       }
       nueva.url = url;
       nueva.formato = formato;
     }
-    // Si origen falta o no es válido, el esquema lo rechaza con un 400
+    // no lo compruebo aquí porque el esquema ya lo rechaza
 
     const imagen = await Image.create(nueva);
     res.status(201).json(sinDatos(imagen));
@@ -201,7 +184,6 @@ export async function crearImagen(
   }
 }
 
-// PUT /api/images/:id (protegida): solo los campos descriptivos
 export async function actualizarImagen(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const imagen = await Image.findById(req.params.id);
@@ -210,19 +192,17 @@ export async function actualizarImagen(req: Request, res: Response, next: NextFu
       return;
     }
     if (!esAutorOAdmin(req, imagen.subidaPor)) {
-      responderError(res, 403, "Forbidden", "Solo quien subió la imagen o un administrador pueden modificarla.");
+      responderError(res, 403, "Forbidden", "solo quien la subió o un administrador pueden editarla.");
       return;
     }
 
-    // publicada, subidaPor, exoplaneta y el contenido no se cambian aquí:
-    // publicar tiene su propia ruta de admin y lo demás define la imagen
+    // solo dejo cambiar el texto porque publicar tiene su propia ruta
     const { titulo, descripcion, creditoAutor } = req.body;
     if (titulo !== undefined) imagen.titulo = titulo;
     if (descripcion !== undefined) imagen.descripcion = descripcion;
     if (creditoAutor !== undefined) imagen.creditoAutor = creditoAutor;
 
-    // save() en lugar de findByIdAndUpdate para que se ejecuten todas las
-    // validaciones del esquema, incluida la de coherencia origen/datos/url
+    // uso save() para que pase todas las validaciones del esquema
     await imagen.save();
     res.status(200).json(sinDatos(imagen));
   } catch (err) {
@@ -230,8 +210,7 @@ export async function actualizarImagen(req: Request, res: Response, next: NextFu
   }
 }
 
-// PATCH /api/images/:id/publicar (solo admin): fija publicada, true por defecto.
-// Se fija en vez de alternar para que dos clics seguidos no deshagan la acción.
+// lo fijo en vez de alternarlo para que dos clics seguidos no lo deshagan
 export async function publicarImagen(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const publicada = typeof req.body?.publicada === "boolean" ? req.body.publicada : true;
@@ -241,10 +220,7 @@ export async function publicarImagen(req: Request, res: Response, next: NextFunc
       return;
     }
 
-    // Una imagen despublicada no puede seguir siendo la principal de un
-    // exoplaneta público: el populate de imagenPrincipal la seguiría mostrando
-    // en el catálogo y la moderación no serviría de nada. El filtro por
-    // imagenPrincipal hace que no toque nada si no era la principal.
+    // quito la principal al despublicar porque si no la imagen se seguía viendo en el catálogo
     if (!imagen.publicada) {
       await Exoplanet.updateOne(
         { _id: imagen.exoplaneta, imagenPrincipal: imagen._id },
@@ -258,7 +234,6 @@ export async function publicarImagen(req: Request, res: Response, next: NextFunc
   }
 }
 
-// DELETE /api/images/:id (protegida): solo quien la subió o un administrador
 export async function eliminarImagen(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const imagen = await Image.findById(req.params.id).select("-datos");
@@ -267,20 +242,18 @@ export async function eliminarImagen(req: Request, res: Response, next: NextFunc
       return;
     }
     if (!esAutorOAdmin(req, imagen.subidaPor)) {
-      responderError(res, 403, "Forbidden", "Solo quien subió la imagen o un administrador pueden eliminarla.");
+      responderError(res, 403, "Forbidden", "solo quien la subió o un administrador pueden eliminarla.");
       return;
     }
 
-    // Si era la imagen principal de su exoplaneta se quita antes la
-    // referencia, para que el exoplaneta no apunte a una imagen inexistente.
-    // El filtro por imagenPrincipal hace que no toque nada si no lo era.
+    // quito antes la referencia para que el exoplaneta no apunte a una imagen borrada
     await Exoplanet.updateOne(
       { _id: imagen.exoplaneta, imagenPrincipal: imagen._id },
       { $set: { imagenPrincipal: null } }
     );
     await imagen.deleteOne();
 
-    res.status(200).json({ mensaje: "Imagen eliminada", id: String(imagen._id) });
+    res.status(200).json({ mensaje: "imagen eliminada", id: String(imagen._id) });
   } catch (err) {
     next(err);
   }

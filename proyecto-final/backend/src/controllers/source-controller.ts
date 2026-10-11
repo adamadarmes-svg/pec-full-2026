@@ -4,10 +4,9 @@ import { Exoplanet } from "../models/exoplanet-model";
 import { responderError } from "../utils/responder";
 
 function noEncontrada(res: Response): void {
-  responderError(res, 404, "Not Found", "Fuente no encontrada");
+  responderError(res, 404, "Not Found", "fuente no encontrada.");
 }
 
-// GET /api/sources: las más recientes primero
 export async function listarFuentes(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const fuentes = await Source.find().sort({ anio: -1 });
@@ -17,7 +16,6 @@ export async function listarFuentes(req: Request, res: Response, next: NextFunct
   }
 }
 
-// GET /api/sources/:id
 export async function obtenerFuente(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const fuente = await Source.findById(req.params.id);
@@ -31,7 +29,6 @@ export async function obtenerFuente(req: Request, res: Response, next: NextFunct
   }
 }
 
-// POST /api/sources (protegida)
 export async function crearFuente(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const nueva = await Source.create(req.body);
@@ -41,7 +38,6 @@ export async function crearFuente(req: Request, res: Response, next: NextFunctio
   }
 }
 
-// PUT /api/sources/:id (solo admin: las fuentes son catálogo compartido)
 export async function actualizarFuente(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const fuente = await Source.findByIdAndUpdate(req.params.id, req.body, {
@@ -58,18 +54,16 @@ export async function actualizarFuente(req: Request, res: Response, next: NextFu
   }
 }
 
-// DELETE /api/sources/:id (solo admin)
 export async function eliminarFuente(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    // Si algún exoplaneta la cita se rechaza el borrado: dejaría su
-    // fuentePrincipal apuntando a un documento inexistente
+    // no dejo borrar una fuente en uso para no dejar referencias rotas
     const enUso = await Exoplanet.countDocuments({ fuentePrincipal: req.params.id });
     if (enUso > 0) {
       responderError(
         res,
         409,
         "Conflict",
-        `No se puede eliminar: ${enUso} exoplaneta(s) la usan como fuente principal. Cambia antes su fuente.`
+        `la usan ${enUso} exoplaneta(s). cámbiales la fuente antes de eliminarla.`
       );
       return;
     }
@@ -79,7 +73,7 @@ export async function eliminarFuente(req: Request, res: Response, next: NextFunc
       noEncontrada(res);
       return;
     }
-    res.status(200).json({ mensaje: "Fuente eliminada", id: req.params.id });
+    res.status(200).json({ mensaje: "fuente eliminada", id: req.params.id });
   } catch (err) {
     next(err);
   }

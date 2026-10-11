@@ -5,26 +5,25 @@ const imageSchema = new Schema<IImage>(
   {
     titulo: {
       type: String,
-      required: [true, "El título de la imagen es obligatorio"],
+      required: [true, "falta el título."],
       trim: true,
-      maxlength: [120, "El título no puede superar los 120 caracteres"],
+      maxlength: [120, "el título admite 120 caracteres como máximo."],
     },
     descripcion: {
       type: String,
       trim: true,
-      maxlength: [500, "La descripción no puede superar los 500 caracteres"],
+      maxlength: [500, "la descripción admite 500 caracteres como máximo."],
       default: "",
     },
     origen: {
       type: String,
       enum: {
         values: ORIGENES_IMAGEN,
-        message: "{VALUE} no es un origen de imagen válido",
+        message: "{VALUE} no es un origen de imagen válido.",
       },
-      required: [true, "El origen de la imagen es obligatorio"],
+      required: [true, "falta el origen de la imagen."],
     },
-    // datos y url no son required aquí: cuál de los dos es obligatorio
-    // depende de origen, y eso se comprueba en el pre("validate") de abajo
+    // no los marqué como required porque depende del origen y lo valido abajo
     datos: {
       type: String,
     },
@@ -36,32 +35,31 @@ const imageSchema = new Schema<IImage>(
       type: String,
       enum: {
         values: FORMATOS_IMAGEN,
-        message: "{VALUE} no es un formato de imagen válido",
+        message: "{VALUE} no es un formato de imagen válido.",
       },
     },
     tamanoKb: {
       type: Number,
-      min: [0, "El tamaño no puede ser negativo"],
+      min: [0, "el tamaño no puede ser negativo."],
     },
-    // Índice porque las imágenes siempre se consultan por exoplaneta
+    // puse índice porque las imágenes siempre se buscan por exoplaneta
     exoplaneta: {
       type: Schema.Types.ObjectId,
       ref: "Exoplanet",
-      required: [true, "La imagen debe estar asociada a un exoplaneta"],
+      required: [true, "falta el exoplaneta."],
       index: true,
     },
     subidaPor: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: [true, "Hay que indicar qué usuario sube la imagen"],
+      required: [true, "falta el usuario que la sube."],
     },
     creditoAutor: {
       type: String,
       trim: true,
       default: "Desconocido",
     },
-    // Empieza en false porque las imágenes de los usuarios no se muestran
-    // hasta que un administrador las revisa y aprueba
+    // empieza en false para que un admin la revise antes de mostrarla
     publicada: {
       type: Boolean,
       default: false,
@@ -73,16 +71,13 @@ const imageSchema = new Schema<IImage>(
   }
 );
 
-// Validación cruzada entre campos: un validador de campo solo ve su propio
-// valor, así que la coherencia origen/datos/url se comprueba a nivel de
-// documento. invalidate() la convierte en un ValidationError normal, que el
-// errorHandler ya traduce a 400.
+// lo valido a nivel de documento porque un validador de campo no ve los demás campos
 imageSchema.pre("validate", async function () {
   if (this.origen === "subida" && !this.datos?.trim()) {
-    this.invalidate("datos", "Si el origen es 'subida', hay que enviar la imagen en Base64 en el campo datos");
+    this.invalidate("datos", "con origen subida hay que enviar la imagen en datos.");
   }
   if (this.origen === "enlace" && !this.url?.trim()) {
-    this.invalidate("url", "Si el origen es 'enlace', hay que indicar la url de la imagen");
+    this.invalidate("url", "con origen enlace hay que indicar la url.");
   }
 });
 

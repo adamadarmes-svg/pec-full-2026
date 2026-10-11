@@ -9,13 +9,10 @@ import observationDirectRoutes from "./observation-direct-routes";
 import { notFound } from "../middlewares/not-found";
 import { errorHandler } from "../middlewares/error-handler";
 
-// Router raíz de la API: agrupa todos los recursos bajo un único punto de
-// montaje (/api en app.ts), de modo que app.ts no conoce las rutas concretas.
+// agrupé todo bajo /api para que app.ts no tenga que conocer cada ruta
 const router = Router();
 
-// Mapa de endpoints con su nivel de acceso, para que quien consuma la API
-// sepa qué rutas necesitan la cabecera Authorization: Bearer <token>.
-// "opcional" = pública, pero muestra más contenido si se envía token.
+// puse el nivel de acceso de cada endpoint para saber qué rutas piden token
 const ENDPOINTS = {
   auth: {
     "POST /api/auth/registro": "público",
@@ -32,6 +29,7 @@ const ENDPOINTS = {
     "POST /api/exoplanets/:id/observations": "token",
   },
   observations: {
+    "GET /api/observations?visible=false": "token (admin)",
     "PUT /api/observations/:id": "token (autor o admin)",
     "PATCH /api/observations/:id/ocultar": "token (admin)",
     "DELETE /api/observations/:id": "token (autor, autor del exoplaneta o admin)",
@@ -62,21 +60,20 @@ const ENDPOINTS = {
   },
 };
 
-// Mensaje de bienvenida con el mapa de endpoints. Se exporta para que app.ts
-// lo reutilice en GET / y no se rompa la URL raíz ya desplegada.
+// la exporto para usarla también en la raíz y no romper la url desplegada
 export function mostrarBienvenida(req: Request, res: Response): void {
   res.status(200).json({
     ok: true,
-    mensaje: "API de EXO-ARCHIVE en funcionamiento",
+    mensaje: "api de exoarchive en funcionamiento",
     endpoints: ENDPOINTS,
   });
 }
 
 router.get("/", mostrarBienvenida);
 
-// Estado del servidor y de la conexión a MongoDB, útil para comprobar el despliegue
+// hice esta ruta para comprobar un despliegue sin necesidad de token
 router.get("/health", (req: Request, res: Response) => {
-  // Índices de mongoose.connection.readyState
+  // índices de mongoose.connection.readyState
   const estados = ["desconectado", "conectado", "conectando", "desconectando"];
   res.status(200).json({
     ok: true,
@@ -93,11 +90,7 @@ router.use("/sources", sourceRoutes);
 router.use("/images", imageRoutes);
 router.use("/observations", observationDirectRoutes);
 
-// Los middlewares de 404 y 500 van al final del router porque Express los
-// ejecuta en orden: el 404 solo debe saltar si ninguna ruta de la API
-// coincidió, y el de errores recoge lo que los controladores pasan con
-// next(err). Montarlos aquí hace que la API sea autónoma y responda siempre
-// en JSON, con independencia de cómo se monte en app.ts.
+// puse 404 y 500 al final porque express los ejecuta en orden y así la api siempre responde en json
 router.use(notFound);
 router.use(errorHandler);
 

@@ -3,45 +3,45 @@ import { IObservation, TIPOS_OBSERVACION } from "../types";
 
 const observationSchema = new Schema<IObservation>(
   {
-    // Mínimo de 10 caracteres para evitar aportaciones vacías tipo "ok"
+    // puse mínimo 10 caracteres para evitar respuestas vacías tipo "ok"
     contenido: {
       type: String,
-      required: [true, "El contenido de la observación es obligatorio"],
+      required: [true, "falta el contenido."],
       trim: true,
-      minlength: [10, "La observación debe tener al menos 10 caracteres"],
-      maxlength: [1000, "La observación no puede superar los 1000 caracteres"],
+      minlength: [10, "la observación necesita al menos 10 caracteres."],
+      maxlength: [1000, "la observación admite 1000 caracteres como máximo."],
     },
-    // Índice porque las observaciones se listan por exoplaneta
+    // puse índice porque las observaciones se listan por exoplaneta
     exoplaneta: {
       type: Schema.Types.ObjectId,
       ref: "Exoplanet",
-      required: [true, "La observación debe estar asociada a un exoplaneta"],
+      required: [true, "falta el exoplaneta."],
       index: true,
     },
     autor: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: [true, "La observación debe tener un autor"],
+      required: [true, "falta el autor."],
     },
     tipo: {
       type: String,
       enum: {
         values: TIPOS_OBSERVACION,
-        message: "{VALUE} no es un tipo de observación válido",
+        message: "{VALUE} no es un tipo de observación válido.",
       },
       default: "Observación",
     },
-    // Mismo rango que anioDescubrimiento en los exoplanetas
+    // usé el mismo rango que en los exoplanetas porque antes de 1988 no hay observaciones
     anioObservacion: {
       type: Number,
-      min: [1988, "El primer exoplaneta se detectó en 1988"],
-      max: [new Date().getFullYear() + 1, "El año no puede ser futuro"],
+      min: [1988, "el año mínimo es 1988."],
+      max: [new Date().getFullYear() + 1, "el año no puede ser futuro."],
     },
     instrumento: {
       type: String,
       trim: true,
     },
-    // Permite ocultar una observación (moderación) sin borrarla
+    // añadí visible para poder ocultar sin borrar
     visible: {
       type: Boolean,
       default: true,

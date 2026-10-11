@@ -1,17 +1,16 @@
 import mongoose, { Schema } from "mongoose";
 import { ISource } from "../types";
 
-// Publicación científica que respalda los datos de un exoplaneta
 const sourceSchema = new Schema<ISource>(
   {
     titulo: {
       type: String,
-      required: [true, "El título de la publicación es obligatorio"],
+      required: [true, "falta el título."],
       trim: true,
     },
     autores: {
       type: String,
-      required: [true, "Los autores son obligatorios"],
+      required: [true, "faltan los autores."],
       trim: true,
     },
     publicacion: {
@@ -20,10 +19,10 @@ const sourceSchema = new Schema<ISource>(
     },
     anio: {
       type: Number,
-      min: [1500, "El año no puede ser anterior a 1500"],
-      max: [new Date().getFullYear() + 1, "El año no puede ser futuro"],
+      min: [1500, "el año mínimo es 1500."],
+      max: [new Date().getFullYear() + 1, "el año no puede ser futuro."],
     },
-    // sparse permite muchas fuentes sin DOI sin violar el índice único
+    // puse sparse para que puedan existir muchas fuentes sin doi
     doi: {
       type: String,
       unique: true,

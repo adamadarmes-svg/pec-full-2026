@@ -2,9 +2,7 @@ import { Router } from "express";
 import * as ctrl from "../controllers/source-controller";
 import { proteger, soloAdmin } from "../middlewares/auth-middleware";
 
-// Fuentes científicas, montado en /api/sources. Son catálogo compartido y no
-// tienen propietario: cualquier usuario identificado puede aportar una, pero
-// editar o borrar afecta a todos los exoplanetas que la citan, así que es de admin.
+// editar y borrar fuentes es de admin porque afecta a todos los exoplanetas que las citan
 const router = Router();
 
 router.get("/", ctrl.listarFuentes);

@@ -1,20 +1,23 @@
 import mongoose, { Connection } from "mongoose";
 import { logger } from "./logger";
 
-// Conecta a MongoDB reutilizando la conexión si ya existe. En Vercel cada
-// petición puede ejecutarse en una instancia ya "caliente", y abrir una
-// conexión nueva cada vez agotaría el pool de Atlas.
+// reutilizo la conexión porque en vercel abrir una por petición agotaba el pool de atlas
 export async function connectDB(uri: string): Promise<Connection> {
   if (!uri) {
-    throw new Error("Falta la variable de entorno MONGODB_URI");
+    throw new Error("falta MONGODB_URI en el .env.");
   }
-  // readyState >= 1 significa conectado o conectando
+  // cuento también "conectando" para que dos peticiones a la vez no abran dos conexiones
   if (mongoose.connection.readyState >= 1) {
     return mongoose.connection;
   }
   mongoose.set("strictQuery", true);
-  await mongoose.connect(uri);
-  logger.info("Conectado a MongoDB Atlas");
+  await mongoose.connect(uri, {
+    // lo bajé de 30 s a 5 s porque vercel corta antes con un 504 genérico y se perdía el mensaje de la api
+    serverSelectionTimeoutMS: 5000,
+    // lo bajé de 100 a 5 porque cada instancia abre su propio pool y el plan m0 de atlas admite 500 conexiones en total
+    maxPoolSize: 5,
+  });
+  logger.info("conectado a mongodb atlas");
   return mongoose.connection;
 }
 

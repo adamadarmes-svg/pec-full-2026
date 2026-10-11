@@ -2,8 +2,7 @@ import { API_URL, EVENTO_SESION_EXPIRADA, MENSAJES } from "@/const/config";
 import { leerToken, limpiarSesion } from "@/services/sesionStorage";
 import type { CuerpoErrorApi } from "@/types";
 
-// Error de la API con su status HTTP, para que la interfaz pueda distinguir
-// un 404 de un 403 o de un 400 de validación
+// guardo el status para distinguir un 404 de un 403 o un 400
 export class ErrorApi extends Error {
   readonly status: number;
   readonly codigo: string;
@@ -24,23 +23,27 @@ interface OpcionesPeticion {
   signal?: AbortSignal;
 }
 
-// Una petición cancelada con AbortController no es un error real: los
-// hooks la ignoran en lugar de mostrar un mensaje
+// ignoro las peticiones canceladas porque no son errores reales
 export function esAbortError(error: unknown): boolean {
   return error instanceof DOMException && error.name === "AbortError";
 }
 
-// Texto apto para mostrar al usuario a partir de cualquier error capturado
 export function mensajeDeError(error: unknown): string {
   return error instanceof Error && error.message ? error.message : MENSAJES.ERROR_GENERICO;
+}
+
+// solo bajo la primera letra si la segunda ya es minúscula, así no rompo siglas como ID
+function aMinusculaInicial(texto: string): string {
+  const [primera, segunda] = texto;
+  if (!primera || !segunda || segunda !== segunda.toLowerCase()) return texto;
+  return primera.toLowerCase() + texto.slice(1);
 }
 
 function esCuerpoError(datos: unknown): datos is CuerpoErrorApi {
   return typeof datos === "object" && datos !== null && "mensaje" in datos && typeof datos.mensaje === "string";
 }
 
-// Lee el JSON de la respuesta. Un cuerpo vacío o no JSON devuelve null, pero
-// una cancelación a mitad de lectura se relanza para que no parezca un éxito.
+// relanzo la cancelación para que no parezca un éxito
 async function leerJson(respuesta: Response): Promise<unknown> {
   try {
     return await respuesta.json();
@@ -50,8 +53,8 @@ async function leerJson(respuesta: Response): Promise<unknown> {
   }
 }
 
-// Capa base de todas las llamadas a la API
-export async function peticion<T>(endpoint: string, { metodo = "GET", cuerpo, signal }: OpcionesPeticion = {}): Promise<T> {
+// devuelvo la respuesta sin leer para decidir luego si es json o binario
+async function solicitar({ metodo = "GET", cuerpo, signal }: OpcionesPeticion, endpoint: string): Promise<Response> {
   const token = leerToken();
   const cabeceras: Record<string, string> = {};
   if (token) cabeceras.Authorization = `Bearer ${token}`;
@@ -66,32 +69,38 @@ export async function peticion<T>(endpoint: string, { metodo = "GET", cuerpo, si
       signal,
     });
   } catch (error) {
-    // fetch solo rechaza por cancelación o por red; nunca por un status HTTP
+    // fetch solo falla por red o cancelación, nunca por el status
     if (esAbortError(error)) throw error;
     throw new Error(MENSAJES.SIN_CONEXION);
   }
 
-  const datos = await leerJson(respuesta);
-
   if (!respuesta.ok) {
-    // Un 401 con token significa que el servidor lo rechaza (caducado o
-    // usuario borrado). Sin token es solo un login fallido y no hay sesión
-    // que cerrar.
+    const datos = await leerJson(respuesta);
+    // solo cierro sesión con un 401 si había token, sin token es un login fallido
     if (respuesta.status === 401 && token) {
       limpiarSesion();
       window.dispatchEvent(new Event(EVENTO_SESION_EXPIRADA));
     }
-    const mensaje = esCuerpoError(datos) ? datos.mensaje : MENSAJES.ERROR_GENERICO;
+    const mensaje = esCuerpoError(datos) ? aMinusculaInicial(datos.mensaje) : MENSAJES.ERROR_GENERICO;
     const codigo = esCuerpoError(datos) ? datos.error : "Error";
     throw new ErrorApi(mensaje, respuesta.status, codigo);
   }
 
-  // Punto de confianza: el JSON se asume con la forma que declara el
-  // servicio que llama. No hay validación en tiempo de ejecución.
-  return datos as T;
+  return respuesta;
 }
 
-// Atajos por método HTTP
+export async function peticion<T>(endpoint: string, opciones: OpcionesPeticion = {}): Promise<T> {
+  const respuesta = await solicitar(opciones, endpoint);
+  // confío en que el json tiene la forma del servicio, no lo valido en ejecución
+  return (await leerJson(respuesta)) as T;
+}
+
+// lo hice para las imágenes sin publicar porque un img no manda el token
+export async function obtenerBlob(endpoint: string, signal?: AbortSignal): Promise<Blob> {
+  const respuesta = await solicitar({ signal }, endpoint);
+  return respuesta.blob();
+}
+
 export function get<T>(endpoint: string, signal?: AbortSignal): Promise<T> {
   return peticion<T>(endpoint, { signal });
 }
@@ -108,7 +117,7 @@ export function patch<T>(endpoint: string, cuerpo?: unknown, signal?: AbortSigna
   return peticion<T>(endpoint, { metodo: "PATCH", cuerpo, signal });
 }
 
-// "delete" es palabra reservada en JavaScript, de ahí el nombre corto
+// delete es palabra reservada, por eso del
 export function del<T>(endpoint: string, signal?: AbortSignal): Promise<T> {
   return peticion<T>(endpoint, { metodo: "DELETE", signal });
 }

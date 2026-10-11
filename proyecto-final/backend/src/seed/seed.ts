@@ -4,124 +4,102 @@ import { ENV } from "../config/env";
 import { connectDB } from "../config/db";
 import { logger } from "../config/logger";
 import { Exoplanet } from "../models/exoplanet-model";
-import { User } from "../models/user-model";
-import { Image } from "../models/image-model";
 import { Observation } from "../models/observation-model";
-import { OBSERVACIONES_EJEMPLO } from "./datos-iniciales";
+import { Source } from "../models/source-model";
+import { User } from "../models/user-model";
+import { EXOPLANETAS_INICIALES, FUENTES_INICIALES, OBSERVACIONES_EJEMPLO } from "./datos-iniciales";
 
-// IMPORTANTE: users, exoplanets y sources contienen datos reales. Este script
-// solo añade datos a images y observations. La única escritura permitida en
-// exoplanets es la migración del campo antiguo imagen a imagenPrincipal.
+// el seed nunca borra y solo llena colecciones vacías para poder correrlo sobre producción sin miedo, primero npm run crear-admin y luego npm run seed
 
-// El seed se ejecuta siempre en local, donde algunos DNS de router no
-// resuelven los registros SRV de mongodb+srv (igual que en server.ts)
+// fuerzo dns públicos porque desde local algunos routers no resuelven mongodb+srv
 dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
 
-// Forma cruda del exoplaneta tal como está en MongoDB. Incluye imagen, que ya
-// no existe en el esquema pero puede seguir en documentos sin migrar.
-interface ExoplanetaCrudo {
-  _id: Types.ObjectId;
-  nombre: string;
-  imagen?: unknown;
+// todo va a nombre del admin para no poner textos a nombre de usuarios reales
+async function buscarAdministrador(): Promise<Types.ObjectId> {
+  const email = ENV.ADMIN_EMAIL?.trim().toLowerCase();
+  const admin = email ? await User.findOne({ email, rol: "admin" }).select("_id") : null;
+  if (!admin) {
+    throw new Error(
+      "no existe el administrador de ADMIN_EMAIL. ejecuta antes npm run crear-admin."
+    );
+  }
+  return admin._id as Types.ObjectId;
+}
+
+// primero las fuentes porque los exoplanetas las necesitan
+async function sembrarFuentes(): Promise<number> {
+  if ((await Source.countDocuments()) > 0) return 0;
+  const creadas = await Source.insertMany(FUENTES_INICIALES);
+  return creadas.length;
+}
+
+// busco la fuente por doi porque en una base nueva el ObjectId sería otro
+async function sembrarExoplanetas(adminId: Types.ObjectId): Promise<number> {
+  if ((await Exoplanet.countDocuments()) > 0) return 0;
+
+  const fuentes = await Source.find({ doi: { $exists: true } }).select("doi").lean();
+  const idPorDoi = new Map(fuentes.map((fuente) => [fuente.doi, fuente._id]));
+
+  const documentos = EXOPLANETAS_INICIALES.map(({ fuente, ...datos }) => {
+    const fuentePrincipal = fuente ? idPorDoi.get(fuente.doi) : undefined;
+    // si no encuentro la fuente sigo sin ella y aviso, para no parar todo el seed
+    if (fuente && !fuentePrincipal) {
+      logger.warn(`no hay fuente con doi ${fuente.doi}: ${datos.nombre} se crea sin ella.`);
+    }
+    // no pongo imagenPrincipal porque en una base nueva no hay imágenes
+    return { ...datos, fuentePrincipal, creadoPor: adminId };
+  });
+
+  const creados = await Exoplanet.insertMany(documentos);
+  return creados.length;
+}
+
+// las pongo a nombre del admin para no atribuirlas a usuarios reales
+async function sembrarObservaciones(adminId: Types.ObjectId): Promise<number> {
+  if ((await Observation.countDocuments()) > 0) return 0;
+
+  const exoplanetas = await Exoplanet.find().sort({ nombre: 1 }).select("_id").lean();
+  if (exoplanetas.length === 0) {
+    logger.warn("no hay exoplanetas: no se crean observaciones de ejemplo.");
+    return 0;
+  }
+
+  const creadas = await Observation.insertMany(
+    OBSERVACIONES_EJEMPLO.map((observacion, i) => ({
+      ...observacion,
+      exoplaneta: exoplanetas[i % exoplanetas.length]._id,
+      autor: adminId,
+    }))
+  );
+  return creadas.length;
+}
+
+function resumen(coleccion: string, creados: number): string {
+  return creados > 0 ? `${coleccion}: ${creados} creados` : `${coleccion}: ya tenía datos, no se ha tocado`;
 }
 
 async function seed(): Promise<void> {
   try {
-    // 1. Conexión con la misma configuración que la API
     await connectDB(ENV.MONGODB_URI);
 
-    // 2. Limpieza. observations se vacía entera, pero images NO: las imágenes
-    // migradas son la única copia de las URL originales, porque la migración
-    // borra el campo imagen del exoplaneta. Si se borraran, una segunda
-    // ejecución del seed ya no podría recrearlas y los exoplanetas quedarían
-    // apuntando a imágenes inexistentes. Por eso solo se borran las imágenes
-    // que ningún exoplaneta referencia en imagenPrincipal.
-    const { deletedCount: observacionesBorradas } = await Observation.deleteMany({});
-    const imagenesEnUso = await Exoplanet.distinct("imagenPrincipal", { imagenPrincipal: { $ne: null } });
-    const { deletedCount: imagenesBorradas } = await Image.deleteMany({ _id: { $nin: imagenesEnUso } });
+    // busco al admin lo primero para parar antes de escribir nada
+    const adminId = await buscarAdministrador();
 
-    // 3. Datos existentes de los que depende el seed. Se leen con .lean()
-    // porque db.ts activa strictQuery y el esquema es estricto: un documento
-    // de Mongoose oculta los campos que no están en el esquema, y imagen ya
-    // no lo está. lean() devuelve el documento crudo de MongoDB, con imagen.
-    const exoplanetas = await Exoplanet.find().sort({ nombre: 1 }).lean<ExoplanetaCrudo[]>();
-    const usuarios = await User.find().sort({ createdAt: 1 }).lean();
+    const fuentes = await sembrarFuentes();
+    const exoplanetas = await sembrarExoplanetas(adminId);
+    const observaciones = await sembrarObservaciones(adminId);
 
-    // 4. Sin exoplanetas o sin usuarios no hay a quién asociar imágenes ni observaciones
-    if (exoplanetas.length === 0 || usuarios.length === 0) {
-      throw new Error(
-        `El seed necesita exoplanetas y usuarios existentes (encontrados: ${exoplanetas.length} exoplanetas, ${usuarios.length} usuarios). Créalos antes de ejecutarlo.`
-      );
-    }
-
-    // 5. Migración de imagen (URL en el exoplaneta) a un documento Image.
-    // El filtro se hace en JS y no en la consulta: con strictQuery, Mongoose
-    // eliminaría del filtro { imagen: ... } por no estar en el esquema.
-    const pendientes = exoplanetas.filter(
-      (exo) => typeof exo.imagen === "string" && exo.imagen.trim() !== ""
-    );
-
-    let imagenesMigradas = 0;
-    if (pendientes.length > 0) {
-      // La autoría de las imágenes migradas no bloquea el seed: si aún no hay
-      // administrador se usa el primer usuario y se avisa
-      let responsable = usuarios.find((u) => u.rol === "admin");
-      if (!responsable) {
-        responsable = usuarios[0];
-        logger.warn(
-          `Aviso: no hay ningún usuario con rol admin. Las imágenes migradas figurarán como subidas por "${responsable.nombre}" (${responsable.email}).`
-        );
-      }
-
-      for (const exo of pendientes) {
-        const imagen = await Image.create({
-          titulo: `Imagen de ${exo.nombre}`,
-          origen: "enlace",
-          url: exo.imagen as string,
-          exoplaneta: exo._id,
-          subidaPor: responsable._id,
-          creditoAutor: "NASA / Archivo original",
-          publicada: true,
-        });
-
-        // strict: false es imprescindible: con el esquema estricto Mongoose
-        // descartaría $unset de imagen sin dar error y el campo seguiría ahí.
-        // $set y $unset van en la misma operación para que sea atómica: si
-        // fallara, la imagen quedaría sin referenciar y la próxima ejecución
-        // la borraría y repetiría la migración de este exoplaneta.
-        await Exoplanet.updateOne(
-          { _id: exo._id },
-          { $set: { imagenPrincipal: imagen._id }, $unset: { imagen: 1 } },
-          { strict: false }
-        );
-        imagenesMigradas++;
-      }
-    }
-
-    // 6. Observaciones repartidas de forma cíclica entre exoplanetas y usuarios.
-    // insertMany valida cada documento con el esquema antes de guardarlo.
-    const observaciones = await Observation.insertMany(
-      OBSERVACIONES_EJEMPLO.map((obs, i) => ({
-        ...obs,
-        exoplaneta: exoplanetas[i % exoplanetas.length]._id,
-        autor: usuarios[i % usuarios.length]._id,
-      }))
-    );
-
-    // 7. Resumen
-    logger.info("Seed completado");
-    logger.info(`Observaciones borradas: ${observacionesBorradas}`);
-    logger.info(`Imágenes sin referenciar borradas: ${imagenesBorradas}`);
-    logger.info(`Imágenes migradas: ${imagenesMigradas}`);
-    logger.info(`Observaciones creadas: ${observaciones.length}`);
+    logger.info("seed completado");
+    logger.info(resumen("sources", fuentes));
+    logger.info(resumen("exoplanets", exoplanetas));
+    logger.info(resumen("observations", observaciones));
   } catch (err) {
     const mensaje = err instanceof Error ? err.message : String(err);
-    logger.error(`Error en el seed: ${mensaje}`, { stack: err instanceof Error ? err.stack : undefined });
-    // exitCode en lugar de process.exit(1): exit() terminaría el proceso al
-    // instante y el finally no llegaría a cerrar la conexión
+    logger.error(`error en el seed: ${mensaje}`, { stack: err instanceof Error ? err.stack : undefined });
+    // uso exitCode porque exit() cortaba antes de cerrar la conexión
     process.exitCode = 1;
   } finally {
-    // 8. Sin cerrar la conexión el proceso de Node se quedaría abierto
+    // cierro la conexión porque si no el proceso se quedaba abierto
     await mongoose.connection.close();
   }
 }

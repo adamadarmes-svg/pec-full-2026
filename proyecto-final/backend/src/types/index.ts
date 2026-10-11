@@ -1,7 +1,6 @@
 import { Document, Types } from "mongoose";
 
-// Valores permitidos de los enums. Se definen como constantes para que los
-// esquemas de Mongoose y los tipos de TypeScript compartan una única fuente.
+// los puse como constantes para que esquemas y tipos usen la misma lista
 export const ROLES_USUARIO = ["admin", "investigador"] as const;
 
 export const TIPOS_PLANETA = [
@@ -21,15 +20,14 @@ export const METODOS_DESCUBRIMIENTO = [
   "Otro",
 ] as const;
 
-// "subida": la imagen se guarda en Base64 en la propia BD; "enlace": URL externa
+// "subida" guarda la imagen en base64 en la base y "enlace" solo guarda la url
 export const ORIGENES_IMAGEN = ["subida", "enlace"] as const;
 
 export const FORMATOS_IMAGEN = ["jpeg", "png", "webp", "gif"] as const;
 
 export const TIPOS_OBSERVACION = ["Observación", "Corrección", "Pregunta", "Referencia"] as const;
 
-// Union types derivados de las constantes: si se añade un valor al array,
-// el tipo se actualiza solo.
+// saqué los tipos de las constantes para que se actualicen solos
 export type RolUsuario = (typeof ROLES_USUARIO)[number];
 export type TipoPlaneta = (typeof TIPOS_PLANETA)[number];
 export type MetodoDescubrimiento = (typeof METODOS_DESCUBRIMIENTO)[number];
@@ -37,7 +35,7 @@ export type OrigenImagen = (typeof ORIGENES_IMAGEN)[number];
 export type FormatoImagen = (typeof FORMATOS_IMAGEN)[number];
 export type TipoObservacion = (typeof TIPOS_OBSERVACION)[number];
 
-// Los campos opcionales son los que el esquema no marca como required.
+// los opcionales son los que el esquema no marca como required
 export interface IExoplanet extends Document {
   nombre: string;
   estrellaAnfitriona: string;
@@ -69,7 +67,7 @@ export interface IUser extends Document {
   activo: boolean;
   createdAt: Date;
   updatedAt: Date;
-  // Método de instancia definido en el modelo: compara con el hash guardado
+  // lo implementa user-model.ts con bcrypt.compare
   compararPassword(passwordPlano: string): Promise<boolean>;
 }
 
@@ -85,7 +83,7 @@ export interface ISource extends Document {
   updatedAt: Date;
 }
 
-// Según el origen, el contenido está en datos (Base64) o en url, nunca ambos obligatorios
+// según el origen va en datos o en url, por eso ninguno es obligatorio
 export interface IImage extends Document {
   titulo: string;
   descripcion: string;
@@ -102,7 +100,6 @@ export interface IImage extends Document {
   updatedAt: Date;
 }
 
-// Aportación de un usuario sobre un exoplaneta concreto
 export interface IObservation extends Document {
   contenido: string;
   exoplaneta: Types.ObjectId;
@@ -115,29 +112,25 @@ export interface IObservation extends Document {
   updatedAt: Date;
 }
 
-// Datos que viajan dentro del token. Solo lo imprescindible: el token se
-// puede decodificar sin la clave, así que nunca debe llevar datos sensibles.
+// solo meto lo justo porque el token se puede leer sin la clave
 export interface PayloadJWT {
   id: string;
   email: string;
   rol: RolUsuario;
 }
 
-// Usuario tal como se envía al cliente: sin password ni métodos de Mongoose
+// quité password y métodos de mongoose porque esto es lo que llega al cliente
 export type UsuarioPublico = Pick<
   IUser,
   "nombre" | "email" | "institucion" | "rol" | "activo" | "createdAt" | "updatedAt"
 > & { _id: Types.ObjectId };
 
-// Respuesta de registro e inicio de sesión
 export interface RespuestaAuth {
   usuario: UsuarioPublico;
   token: string;
 }
 
-// Declaration merging: amplía el Request de Express para toda la aplicación.
-// Este bloque es lo que permite usar req.usuario (lo rellena el middleware
-// proteger) sin castings en controladores y middlewares.
+// amplié el Request de express para poder usar req.usuario sin castings
 declare global {
   namespace Express {
     interface Request {
@@ -146,8 +139,7 @@ declare global {
   }
 }
 
-// Formato común de las respuestas de error de la API.
-// stack solo se envía fuera de producción, para depurar.
+// el stack solo sale fuera de producción para depurar
 export interface RespuestaError {
   error: string;
   mensaje: string;
