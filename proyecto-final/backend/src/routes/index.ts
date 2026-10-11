@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import exoplanetRoutes from "./exoplanet-routes";
 import userRoutes from "./user-routes";
 import sourceRoutes from "./source-routes";
+import authRoutes from "./auth-routes";
 import { notFound } from "../middlewares/not-found";
 import { errorHandler } from "../middlewares/error-handler";
 
@@ -17,6 +18,7 @@ export function mostrarBienvenida(req: Request, res: Response): void {
     ok: true,
     mensaje: "API de EXO-ARCHIVE en funcionamiento",
     endpoints: {
+      auth: "/api/auth",
       exoplanets: "/api/exoplanets",
       users: "/api/users",
       sources: "/api/sources",
@@ -39,6 +41,7 @@ router.get("/health", (req: Request, res: Response) => {
   });
 });
 
+router.use("/auth", authRoutes);
 router.use("/exoplanets", exoplanetRoutes);
 router.use("/users", userRoutes);
 router.use("/sources", sourceRoutes);

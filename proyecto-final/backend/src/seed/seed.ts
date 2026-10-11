@@ -2,6 +2,7 @@ import dns from "node:dns";
 import mongoose, { Types } from "mongoose";
 import { ENV } from "../config/env";
 import { connectDB } from "../config/db";
+import { logger } from "../config/logger";
 import { Exoplanet } from "../models/exoplanet-model";
 import { User } from "../models/user-model";
 import { Image } from "../models/image-model";
@@ -67,7 +68,7 @@ async function seed(): Promise<void> {
       let responsable = usuarios.find((u) => u.rol === "admin");
       if (!responsable) {
         responsable = usuarios[0];
-        console.warn(
+        logger.warn(
           `Aviso: no hay ningún usuario con rol admin. Las imágenes migradas figurarán como subidas por "${responsable.nombre}" (${responsable.email}).`
         );
       }
@@ -108,13 +109,14 @@ async function seed(): Promise<void> {
     );
 
     // 7. Resumen
-    console.log("Seed completado:");
-    console.log(`  - Observaciones borradas: ${observacionesBorradas}`);
-    console.log(`  - Imágenes sin referenciar borradas: ${imagenesBorradas}`);
-    console.log(`  - Imágenes migradas: ${imagenesMigradas}`);
-    console.log(`  - Observaciones creadas: ${observaciones.length}`);
+    logger.info("Seed completado");
+    logger.info(`Observaciones borradas: ${observacionesBorradas}`);
+    logger.info(`Imágenes sin referenciar borradas: ${imagenesBorradas}`);
+    logger.info(`Imágenes migradas: ${imagenesMigradas}`);
+    logger.info(`Observaciones creadas: ${observaciones.length}`);
   } catch (err) {
-    console.error("Error en el seed:", err);
+    const mensaje = err instanceof Error ? err.message : String(err);
+    logger.error(`Error en el seed: ${mensaje}`, { stack: err instanceof Error ? err.stack : undefined });
     // exitCode en lugar de process.exit(1): exit() terminaría el proceso al
     // instante y el finally no llegaría a cerrar la conexión
     process.exitCode = 1;

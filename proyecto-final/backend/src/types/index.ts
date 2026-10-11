@@ -115,6 +115,37 @@ export interface IObservation extends Document {
   updatedAt: Date;
 }
 
+// Datos que viajan dentro del token. Solo lo imprescindible: el token se
+// puede decodificar sin la clave, así que nunca debe llevar datos sensibles.
+export interface PayloadJWT {
+  id: string;
+  email: string;
+  rol: RolUsuario;
+}
+
+// Usuario tal como se envía al cliente: sin password ni métodos de Mongoose
+export type UsuarioPublico = Pick<
+  IUser,
+  "nombre" | "email" | "institucion" | "rol" | "activo" | "createdAt" | "updatedAt"
+> & { _id: Types.ObjectId };
+
+// Respuesta de registro e inicio de sesión
+export interface RespuestaAuth {
+  usuario: UsuarioPublico;
+  token: string;
+}
+
+// Declaration merging: amplía el Request de Express para toda la aplicación.
+// Este bloque es lo que permite usar req.usuario (lo rellena el middleware
+// proteger) sin castings en controladores y middlewares.
+declare global {
+  namespace Express {
+    interface Request {
+      usuario?: IUser;
+    }
+  }
+}
+
 // Formato común de las respuestas de error de la API.
 // stack solo se envía fuera de producción, para depurar.
 export interface RespuestaError {

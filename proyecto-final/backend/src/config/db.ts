@@ -1,4 +1,5 @@
 import mongoose, { Connection } from "mongoose";
+import { logger } from "./logger";
 
 // Conecta a MongoDB reutilizando la conexión si ya existe. En Vercel cada
 // petición puede ejecutarse en una instancia ya "caliente", y abrir una
@@ -13,7 +14,7 @@ export async function connectDB(uri: string): Promise<Connection> {
   }
   mongoose.set("strictQuery", true);
   await mongoose.connect(uri);
-  console.log("Conectado a MongoDB Atlas");
+  logger.info("Conectado a MongoDB Atlas");
   return mongoose.connection;
 }
 

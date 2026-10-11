@@ -1,15 +1,23 @@
 import { ErrorRequestHandler } from "express";
 import { ENV } from "../config/env";
+import { logger } from "../config/logger";
 import { RespuestaError } from "../types";
 
 // Middleware de errores: Express lo reconoce por tener 4 parámetros, por eso
 // next se declara aunque no se use. Traduce los errores de Mongoose a códigos
 // HTTP comprensibles en lugar de devolver siempre 500.
 export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
-  console.error(err);
-
   // El stack ayuda a depurar en local, pero en producción revelaría detalles internos
   const responder = (status: number, error: string, mensaje: string): void => {
+    // Los 4xx son fallos del cliente (warn); solo los 5xx son fallos nuestros
+    // y llevan el stack completo para poder investigarlos
+    const contexto = `${req.method} ${req.originalUrl} -> ${status}`;
+    if (status >= 500) {
+      logger.error(`${contexto}: ${err.message}`, { stack: err.stack });
+    } else {
+      logger.warn(`${contexto}: ${mensaje}`);
+    }
+
     const cuerpo: RespuestaError = { error, mensaje };
     if (ENV.NODE_ENV !== "production") cuerpo.stack = err.stack;
     res.status(status).json(cuerpo);

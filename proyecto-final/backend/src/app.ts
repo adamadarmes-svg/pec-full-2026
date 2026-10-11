@@ -1,6 +1,9 @@
 import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
+import helmet from "helmet";
+import morgan from "morgan";
 import { ENV } from "./config/env";
+import { morganStream } from "./config/logger";
 import { connectDB } from "./config/db";
 import routerRaiz, { mostrarBienvenida } from "./routes";
 import { notFound } from "./middlewares/not-found";
@@ -8,8 +11,17 @@ import { errorHandler } from "./middlewares/error-handler";
 
 const app = express();
 
+// helmet va primero para que sus cabeceras HTTP de seguridad (nosniff,
+// HSTS, ocultar X-Powered-By...) se apliquen a todas las respuestas
+app.use(helmet());
+
 // cors permite que el frontend, desplegado en otro dominio, llame a la API
 app.use(cors());
+
+// Registro de peticiones a través de Winston. "dev" es corto y legible en
+// local; "combined" es el formato estándar de Apache, con IP y user-agent.
+app.use(morgan(ENV.NODE_ENV === "production" ? "combined" : "dev", { stream: morganStream }));
+
 app.use(express.json());
 
 // Asegura la conexión a MongoDB antes de cada petición. En Vercel la función
